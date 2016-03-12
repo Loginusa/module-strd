@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ *************************************************************************
+ * The contents of this file are subject to the Openbravo  Public  License
+ * Version  1.1  (the  "License"),  being   the  Mozilla   Public  License
+ * Version 1.1  with a permitted attribution clause; you may not  use this
+ * file except in compliance with the License. You  may  obtain  a copy of
+ * the License at http://www.openbravo.com/legal/license.html
+ * Software distributed under the License  is  distributed  on  an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ * License for the specific  language  governing  rights  and  limitations
+ * under the License.
+ * The Original Code is Openbravo ERP.
+ * The Initial Developer of the Original Code is Openbravo SLU
+ * All portions are Copyright (C) 2001-2010 Openbravo SLU
+ * All Rights Reserved.
+ * Contributor(s):  ______________________________________.
+ ************************************************************************
+-->
+<SqlClass name="GinDocGeneratorData" package="com.gai.inventory.erpCommon.ad_callouts">
+<SqlClassComment></SqlClassComment>
+
+  <SqlMethod name="selectDoc" type="preparedStatement" return="multiple">
+    <SqlMethodComment>selct documentno</SqlMethodComment>
+    <Sql>
+      <![CDATA[
+        SELECT '' as DOCUMENTNO , '' as GName,
+        COALESCE(d.DocSubTypeSO, '--') as DocSubTypeSO,
+        d.IsDocNoControlled, s.CurrentNext, s.CurrentNextSys, d.name,
+        s.AD_Sequence_ID, d.IsSOTrx, s.prefix, '' AS kode
+        FROM C_DocType d left join AD_Sequence s on d.DocNoSequence_ID=s.AD_Sequence_ID
+        WHERE d.C_DocType_ID = ?
+      ]]>
+    </Sql>
+    <Parameter name="cDocTypeId"/>
+  </SqlMethod>
+<!--
+  <SqlMethod name="selectProduct" type="preparedStatement" return="multiple">
+    <SqlMethodComment>Select Document No</SqlMethodComment>
+    <Sql>
+      <![CDATA[
+        SELECT MP.Value as kode, MPC.Name as name
+        FROM M_Product MP, C_DocType MPC
+        WHERE MP.EM_Gin_DocType_ID=MPC.C_DocType_ID
+        AND MP.M_Product_ID = ?
+      ]]>
+    </Sql>
+    <Parameter name="mProductId"/>
+  </SqlMethod>
+-->
+<!--
+  <SqlMethod name="selectPartner" type="preparedStatement" return="multiple">
+    <SqlMethodComment>Select Document No</SqlMethodComment>
+    <Sql>
+      <![CDATA[
+        SELECT MP.Value as kode, MPC.Name as name
+        FROM C_Bpartner MP, C_DocType MPC
+        WHERE MP.EM_Gin_DocType_ID=MPC.C_DocType_ID
+        AND MP.C_Bpartner_ID = ?
+      ]]>
+    </Sql>
+    <Parameter name="cBpartnerId"/>
+  </SqlMethod>
+-->
+  <SqlMethod name="selectOtherShipment" type="preparedStatement" return="multiple">
+    <SqlMethodComment>Select Document No selectOtherShipment</SqlMethodComment>
+    <Sql>
+      <![CDATA[
+        SELECT MI.EM_Gin_Documentno as kode, MPC.Name as name
+        FROM M_Inventory MI, C_DocType MPC
+        WHERE MI.em_gin_doctypeos_id=MPC.C_DocType_ID
+        AND MI.M_Inventory_ID = ?
+      ]]>
+    </Sql>
+    <Parameter name="mInventoryId"/>
+  </SqlMethod>
+
+
+  <SqlMethod name="selectStokOpname" type="preparedStatement" return="multiple">
+    <SqlMethodComment>Select Document No selectStokOpname</SqlMethodComment>
+    <Sql>
+      <![CDATA[
+        SELECT MI.EM_Gin_Documentno as kode, MPC.Name as name
+        FROM M_Inventory MI, C_DocType MPC
+        WHERE MI.em_gin_doctypesob_id=MPC.C_DocType_ID
+        AND MI.M_Inventory_ID = ?
+      ]]>
+    </Sql>
+    <Parameter name="mInventoryId"/>
+  </SqlMethod>
+
+  <SqlMethod name="selectOtherReceipt" type="preparedStatement" return="multiple">
+    <SqlMethodComment>Select Document No selectOtherReceipt</SqlMethodComment>
+    <Sql>
+      <![CDATA[
+        SELECT MI.EM_Gin_Documentno as kode, MPC.Name as name
+        FROM M_Inventory MI, C_DocType MPC
+        WHERE MI.em_gin_doctypeor_id=MPC.C_DocType_ID
+        AND MI.M_Inventory_ID = ?
+      ]]>
+    </Sql>
+    <Parameter name="mInventoryId"/>
+  </SqlMethod>
+  
+  <SqlMethod name="selectTab" type="preparedStatement" return="String" default="">
+    <SqlMethodComment>Select Document No</SqlMethodComment>
+    <Sql>
+      <![CDATA[
+        SELECT Name
+        FROM AD_Tab
+        WHERE AD_Tab_ID = ?
+      ]]>
+    </Sql>
+    <Parameter name="adTabId"/>
+  </SqlMethod>
+
+</SqlClass>

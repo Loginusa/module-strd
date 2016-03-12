@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <database name="MODIFIED TABLE M_PRODUCT_BOM">
+    <table name="M_PRODUCT_BOM" primaryKey="M_PRODUCT_BOM_KEY">
+      <column name="EM_GMB_BOM_ID" primaryKey="false" required="false" type="VARCHAR" size="32" autoIncrement="false">
+        <default/>
+        <onCreateDefault/>
+      </column>
+      <foreign-key foreignTable="GMB_BOM" name="EM_GMB_BOM">
+        <reference local="EM_GMB_BOM_ID" foreign="GMB_BOM_ID"/>
+      </foreign-key>
+    </table>
+  </database>

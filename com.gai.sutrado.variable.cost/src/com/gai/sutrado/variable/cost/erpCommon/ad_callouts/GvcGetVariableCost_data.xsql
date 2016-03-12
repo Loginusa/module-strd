@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+
+<SqlClass name="GvcGetVariableCostData" package="com.gai.sutrado.variable.cost.erpCommon.ad_callouts">
+   <SqlClassComment></SqlClassComment>
+   <SqlMethod name="select" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+        select 
+        gvc.value as val,gvc.m_product_id as id,
+        C_CURRENCY_CONVERT('1','303',TO_CHAR('100'),TO_DATE(COALESCE(NOW(), NOW())), NULL,gvc.ad_client_id, gvc.ad_org_id) AS idr
+        from gvc_variable_cost gvc
+        where gvc.m_product_id = ?
+      </Sql>
+      <Parameter name="mdesimalIDR" type="replace" optional="true" after="C_CURRENCY_CONVERT(" text="'1'"/>
+      <Parameter name="mProductId"/>
+   </SqlMethod>
+</SqlClass>

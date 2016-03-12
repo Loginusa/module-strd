@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER GSP_SELLING_PRICE_TRG">
+    <trigger name="GSP_SELLING_PRICE_TRG" table="GSP_SELLPRICE_LINE" fires="after" insert="true" update="true" delete="true" foreach="row">
+      <body><![CDATA[
+
+
+/************************************************************************
+* The contents of this file are subject to the Openbravo  Public  License
+* Version  1.0  (the  "License"),  being   the  Mozilla   Public  License
+* Version 1.1  with a permitted attribution clause; you may not  use this
+* file except in compliance with the License. You  may  obtain  a copy of
+* the License at http://www.openbravo.com/legal/license.html
+* Software distributed under the License  is  distributed  on  an "AS IS"
+* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+* License for the specific  language  governing  rights  and  limitations
+* under the License.
+* The Original Code is Openbravo ERP.
+* The Initial Developer of the Original Code is Openbravo SLU
+* All portions are Copyright (C) 2010 Openbravo SLU
+* All Rights Reserved.
+* Contributor(s):  ______________________________________.
+*************************************************************************/
+
+v_Processed VARCHAR(60) ;
+v_FIN_Payment_ID VARCHAR2(32);
+v_Gsp_Selling_Price_ID VARCHAR2(32);
+S_Avalan NUMBER;
+V_Material NUMBER;
+V_Packing NUMBER;
+V_Variable NUMBER;
+V_Avalan NUMBER;
+S_Fixcost NUMBER;
+V_Fixcost NUMBER;
+S_Waste NUMBER;
+V_Waste NUMBER;
+S_Cof NUMBER;
+V_Cof NUMBER;
+S_Profit NUMBER;
+V_Profit NUMBER;
+S_Freight NUMBER;
+V_Freight NUMBER;
+S_Insurance NUMBER;
+V_Insurance NUMBER;
+S_Handling NUMBER;
+V_Handling NUMBER;
+V_Netsale NUMBER;
+V_Sellingprice NUMBER;
+S_Avalan_d NUMBER;
+V_Material_d NUMBER;
+V_Packing_d NUMBER;
+V_Variable_d NUMBER;
+V_Avalan_d NUMBER;
+S_Fixcost_d NUMBER;
+V_Fixcost_d NUMBER;
+S_Waste_d NUMBER;
+V_Waste_d NUMBER;
+S_Cof_d NUMBER;
+V_Cof_d NUMBER;
+S_Profit_d NUMBER;
+V_Profit_d NUMBER;
+S_Freight_d NUMBER;
+V_Freight_d NUMBER;
+S_Insurance_d NUMBER;
+V_Insurance_d NUMBER;
+S_Handling_d NUMBER;
+V_Handling_d NUMBER;
+V_Netsale_d NUMBER;
+V_Sellingprice_d NUMBER;
+v_ID VARCHAR(32);
+
+BEGIN
+    
+  IF AD_isTriggerEnabled()='N' THEN RETURN;
+  END IF;
+
+
+
+  IF (INSERTING) THEN
+    v_Gsp_Selling_Price_ID:=:NEW.Gsp_Selling_Price_ID;
+
+       SELECT SUM(avalan_p),SUM(avalan_v),SUM(to_number(material_price)),SUM(packing),SUM(fix_cost_v),SUM(fix_cost_p) ,SUM(variabel_cost) ,SUM(cof_v),SUM(cof_p) 
+       ,SUM(profit_v),SUM(profit_p) ,SUM(waste_cost_v),SUM(waste_cost_p) ,SUM(net_sales),SUM(freight_v),SUM(freight_p),SUM(insurance_v),SUM(insurance_p)
+       ,SUM(handling_v),SUM(handling_p),SUM(selling_price)
+       INTO S_Avalan,V_Avalan, V_Material,V_Packing,V_Fixcost ,S_Fixcost, V_Variable,V_Cof  ,S_Cof ,V_Profit,S_Profit,V_Waste, S_Waste,V_Netsale,V_Freight,S_Freight 
+       ,V_Insurance,S_Insurance,V_Handling ,S_Handling, V_Sellingprice
+       FROM gsp_sellprice_LINE WHERE Gsp_Selling_Price_ID = :NEW.Gsp_Selling_Price_ID ;
+
+    	UPDATE gsp_selling_price SET avalan_v= (V_Avalan), fix_cost_v= (V_Fixcost) , insurance_v= (V_Insurance) , 
+    	t_salesprice_v = (V_Sellingprice), t_sellprice_v = (V_Sellingprice), material_price_v = to_number(V_Material),
+    	packing_v = (V_Packing), variable_v= (V_Variable), net_sales_v = (V_Netsale), waste_v= (V_Waste), 
+    	cof_v=(V_Cof), profit_v= (V_Profit),freight_v= (V_Freight),handling_v= (V_Handling) 
+    	,avalan_p=(S_Avalan),fix_cost_p=(S_Fixcost),waste_p=(S_Waste),cof_p=(S_Cof),profit_p=(S_Profit),freight=(S_Freight),insurance=(S_insurance),handling_p=(S_Handling)
+	WHERE Gsp_Selling_Price_ID=:NEW.Gsp_Selling_Price_ID;	
+  ELSE
+    v_Gsp_Selling_Price_ID:=:OLD.Gsp_Selling_Price_ID;
+  END IF;
+
+IF (UPDATING) AND ((:new.avalan_p <> :old.avalan_p) OR (:new.fix_cost_p <> :old.fix_cost_p)OR (:new.handling_p <> :old.handling_p)OR (:new.cof_p <> :old.cof_p) OR (:new.profit_p <> :old.profit_p) OR (:new.packing <> :old.packing))  
+	THEN
+  	SELECT SUM(avalan_p),SUM(avalan_v),SUM(to_number(material_price)),SUM(packing),SUM(fix_cost_v),SUM(fix_cost_p) ,SUM(variabel_cost) ,SUM(cof_v),SUM(cof_p) 
+       ,SUM(profit_v),SUM(profit_p) ,SUM(waste_cost_v),SUM(waste_cost_p) ,SUM(net_sales),SUM(freight_v),SUM(freight_p),SUM(insurance_v),SUM(insurance_p)
+       ,SUM(handling_v),SUM(handling_p),SUM(selling_price)
+       INTO S_Avalan,V_Avalan, V_Material,V_Packing,V_Fixcost ,S_Fixcost, V_Variable,V_Cof  ,S_Cof ,V_Profit,S_Profit,V_Waste, S_Waste,V_Netsale,V_Freight,S_Freight 
+       ,V_Insurance,S_Insurance,V_Handling ,S_Handling, V_Sellingprice
+       FROM gsp_sellprice_LINE WHERE Gsp_Selling_Price_ID = :NEW.Gsp_Selling_Price_ID ;
+
+    	UPDATE gsp_selling_price SET avalan_v= (V_Avalan), fix_cost_v= (V_Fixcost) , insurance_v= (V_Insurance) , 
+    	t_salesprice_v = (V_Sellingprice), t_sellprice_v = (V_Sellingprice), material_price_v = to_number(V_Material),
+    	packing_v = (V_Packing), variable_v= (V_Variable), net_sales_v = (V_Netsale), waste_v= (V_Waste), 
+    	cof_v=(V_Cof), profit_v= (V_Profit),freight_v= (V_Freight) ,handling_v= (V_Handling) 
+    	,avalan_p=(S_Avalan),fix_cost_p=(S_Fixcost),waste_p=(S_Waste),cof_p=(S_Cof),profit_p=(S_Profit),freight=(S_Freight),insurance=(S_insurance),handling_p=(S_Handling)
+	WHERE Gsp_Selling_Price_ID=:NEW.Gsp_Selling_Price_ID;
+
+  END IF;
+
+    IF (DELETING) THEN 
+        SELECT SUM(avalan_p),SUM(avalan_v),SUM(to_number(material_price)),SUM(packing),SUM(fix_cost_v),SUM(fix_cost_p) ,SUM(variabel_cost) ,SUM(cof_v),SUM(cof_p) 
+       ,SUM(profit_v),SUM(profit_p) ,SUM(waste_cost_v),SUM(waste_cost_p) ,SUM(net_sales),SUM(freight_v),SUM(freight_p),SUM(insurance_v),SUM(insurance_p)
+       ,SUM(handling_v),SUM(handling_p),SUM(selling_price)
+       INTO S_Avalan_d,V_Avalan_d, V_Material_d,V_Packing_d,V_Fixcost_d ,S_Fixcost_d, V_Variable_d,V_Cof_d ,S_Cof_d ,V_Profit_d,S_Profit_d,V_Waste_d, S_Waste_d,
+       V_Netsale_d,V_Freight_d,S_Freight_d,V_Insurance_d,S_Insurance_d,V_Handling_d,S_Handling_d, V_Sellingprice_d
+       FROM gsp_sellprice_LINE WHERE Gsp_Selling_Price_ID = :OLD.Gsp_Selling_Price_ID ;
+
+    	UPDATE gsp_selling_price SET avalan_v= (V_Avalan_d), fix_cost_v= (V_Fixcost_d) , insurance_v= (V_Insurance_d) , 
+    	t_sellprice_v = (V_Sellingprice_d), material_price_v = to_number(V_Material_d),
+    	packing_v = (V_Packing_d), variable_v= (V_Variable_d), net_sales_v = (V_Netsale_d), waste_v= (V_Waste_d), 
+    	cof_v=(V_Cof_d), profit_v= (V_Profit_d),freight_v= (V_Freight_d) ,handling_v= (V_Handling_d) 
+    	,avalan_p=(S_Avalan_d),fix_cost_p=(S_Fixcost_d),waste_p=(S_Waste_d),cof_p=(S_Cof_d),profit_p=(S_Profit_d),freight=(S_Freight_d),insurance=(S_insurance_d),
+    	handling_p=(S_Handling_d)
+	WHERE Gsp_Selling_Price_ID=:old.Gsp_Selling_Price_ID;
+END IF;
+  /*SELECT PROCESSED
+  INTO v_Processed
+  FROM FIN_Payment
+  WHERE FIN_Payment_ID=v_FIN_Payment_ID;
+  
+  IF (UPDATING) AND (:new.jumlah_giro <> :old.jumlah_giro) THEN
+  	UPDATE fin_payment SET amount=amount+(:new.jumlah_giro-amount)
+	WHERE fin_payment_ID=:NEW.fin_payment_ID;
+  	IF (v_Processed='Y') THEN
+    	RAISE_APPLICATION_ERROR(-20000, '@20501@');
+  	END IF;
+  END IF;
+          
+  IF((DELETING OR INSERTING) AND v_Processed='Y') THEN
+  	RAISE_APPLICATION_ERROR(-20000, '@20501@');
+  END IF;
+IF DELETING THEN 
+	UPDATE fin_payment SET amount=amount-:old.jumlah_giro
+	WHERE fin_payment_ID=:old.fin_payment_ID;*/
+RETURN NEW; 
+--ELSE RETURN NEW; END IF; 
+ 
+
+END GSP_SELLING_PRICE_TRG
+]]></body>
+    </trigger>
+  </database>

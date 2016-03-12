@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ *************************************************************************
+GAI - Sodikin
+ ************************************************************************
+-->
+
+<SqlClass name="GspGetProdukData" package="com.gai.sutrado.sellingprice.erpCommon.ad_callouts">
+   <SqlClassComment></SqlClassComment>
+   <SqlMethod name="select" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+        select a.m_product_id,a.name, mb.m_brand_id as brand, cu.c_uom_id as uom, a.description as description,
+        SUM(C_CURRENCY_CONVERT((coalesce(gsp_getprice_version(TO_DATE(?,'dd-mm-yyyy'),c.m_productbom_id),0) * coalesce(c.bomqty,0)),gsp_getcurrency_version(TO_DATE(?,'dd-mm-yyyy'),c.m_productbom_id),?,TO_DATE(?,'dd-mm-yyyy'), NULL,c.ad_client_id, c.ad_org_id)) as total
+        from m_product a
+        left join m_product_bom c on (a.m_product_id = c.m_product_id and c.isactive='Y' and c.em_gsp_isrm='Y')
+		left join m_productprice b on (c.m_productbom_id = b.m_product_id)
+        left join m_brand mb on (mb.m_brand_id = a.m_brand_id)
+        left join c_uom cu on (cu.c_uom_id = a.c_uom_id),
+		m_pricelist_version d
+        where a.m_product_id = ?
+		AND b.m_pricelist_version_id = d.m_pricelist_version_id
+        AND b.m_pricelist_version_id = gsp_getpricelist_version(TO_DATE(?,'dd-mm-yyyy'),c.m_productbom_id)
+        group by a.m_product_id,a.name,mb.m_brand_id , cu.c_uom_id
+      </Sql>
+	  <Parameter name="tanggal1"/>
+	  <Parameter name="tanggal2"/>
+	  <Parameter name="cCurrency"/>
+	  <Parameter name="tanggal3"/>
+      <Parameter name="mProductId"/>
+	  <Parameter name="tanggal4"/>
+   </SqlMethod>
+   <SqlMethod name="selectPacking" type="preparedStatement" return="String" default="">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+         SELECT
+      SUM(C_CURRENCY_CONVERT((coalesce(gsp_getprice_version(TO_DATE(?,'dd-mm-yyyy'),c.m_productbom_id),0) * coalesce(c.bomqty,0)),gsp_getcurrency_version(TO_DATE(?,'dd-mm-yyyy'),c.m_productbom_id),?,TO_DATE(?,'dd-mm-yyyy'), NULL,c.ad_client_id, c.ad_org_id)) as total        
+	  from m_product a
+        left join m_product_bom c on (a.m_product_id = c.m_product_id and c.isactive='Y' and c.em_gsp_isrm='N')
+        left join m_productprice b on (c.m_productbom_id = b.m_product_id)
+        left join m_brand mb on (mb.m_brand_id = a.m_brand_id)
+        left join c_uom cu on (cu.c_uom_id = a.c_uom_id)  
+       ,m_pricelist_version d  
+        where a.m_product_id = ?
+        AND b.m_pricelist_version_id = d.m_pricelist_version_id
+        AND b.m_pricelist_version_id = gsp_getpricelist_version(TO_DATE(?,'dd-mm-yyyy'),c.m_productbom_id)
+      </Sql>
+      <Parameter name="tanggal1"/>
+	  <Parameter name="tanggal2"/>
+	  <Parameter name="cCurrency"/>
+	  <Parameter name="tanggal3"/>
+      <Parameter name="mProductId"/>
+	  <Parameter name="tanggal4"/>
+   </SqlMethod>
+   <SqlMethod name="selectVariableCost" type="preparedStatement" return="String" default="">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+        SELECT 
+		C_CURRENCY_CONVERT(coalesce(gvc.value,0),gvc.c_currency_id,?,TO_DATE(?,'dd-mm-yyyy'), NULL,m.ad_client_id,m.ad_org_id) as vals
+        from m_product m
+        left join gvc_variable_cost gvc on gvc.m_product_id= m.m_product_id
+        where m.m_product_id = ?
+      </Sql>
+	  <Parameter name="cCurrency"/>
+	  <Parameter name="tanggal"/>
+      <Parameter name="mProductId"/>
+   </SqlMethod>
+   
+    <SqlMethod name="selectCurrency" type="preparedStatement" return="String" default="">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+        SELECT gsp_getcurrency_version(TO_DATE(?,'dd-mm-yyyy'),?) as currency 
+        FROM DUAL
+      </Sql>
+	  <Parameter name="tanggal"/>
+      <Parameter name="mProductId"/>
+   </SqlMethod>
+
+</SqlClass>

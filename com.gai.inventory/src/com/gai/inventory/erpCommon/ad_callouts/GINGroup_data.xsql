@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ ************************************************************** **********
+ * The contents of this file are subject to the Openbravo  Public  License
+ * Version  1.1  (the  "License"),  being   the  Mozilla   Public  License
+ * Version 1.1  with a permitted attribution clause; you may not  use this
+ * file except in compliance with the License. You  may  obtain  a copy of
+ * the License at http://www.openbravo.com/legal/license.html 
+ * Software distributed under the License  is  distributed  on  an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ * License for the specific  language  governing  rights  and  limitations
+ * under the License. 
+ * The Original Code is Openbravo ERP. 
+ * The Initial Developer of the Original Code is Openbravo SLU 
+ * All portions are Copyright (C) 2001-2010 Openbravo SLU 
+ * All Rights Reserved. 
+ * Contributor(s):  ______________________________________.
+ ************************************************************************
+-->
+
+
+<SqlClass name="GINGroupData" package="com.gai.inventory.erpCommon.ad_callouts">
+  
+  <SqlMethod name="select" type="preparedStatement" return="multiple">
+    <SqlMethodComment></SqlMethodComment>
+    <Sql>
+      <![CDATA[
+        SELECT FACT_ACCT.FACT_ACCT_ID, FACT_ACCT.FACT_ACCT_GROUP_ID, FACT_ACCT.C_ACCTSCHEMA_ID
+        FROM M_MOVEMENT LEFT JOIN FACT_ACCT ON FACT_ACCT.RECORD_ID = M_MOVEMENT.M_MOVEMENT_ID
+        WHERE M_MOVEMENT.M_MOVEMENT_ID = ? AND FACT_ACCT.C_ACCTSCHEMA_ID = ?
+      ]]>
+    </Sql>
+    <Parameter name="inpmMovementId"/>
+    <Parameter name="inpcAccschemaId"/>
+    </SqlMethod>
+  <!-- TAMBAHAN -->
+  <SqlMethod name="SelectInventory" type="preparedStatement" return="multiple">
+    <SqlMethodComment></SqlMethodComment>
+    <Sql>
+      <![CDATA[
+        SELECT FACT_ACCT.FACT_ACCT_ID, FACT_ACCT.FACT_ACCT_GROUP_ID, FACT_ACCT.C_ACCTSCHEMA_ID
+        FROM M_INVENTORY LEFT JOIN FACT_ACCT ON FACT_ACCT.RECORD_ID = M_INVENTORY.M_INVENTORY_ID
+        WHERE M_INVENTORY.M_INVENTORY_ID = ? AND FACT_ACCT.C_ACCTSCHEMA_ID = ?
+      ]]>
+    </Sql>
+    <Parameter name="inpmInventoryId"/>
+    <Parameter name="inpcAccschemaId"/>
+   </SqlMethod>
+        
+</SqlClass>

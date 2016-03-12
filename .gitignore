@@ -1,0 +1,3 @@
+#Jangan ambil dengan prefix org.xxx
+org.*
+/.project

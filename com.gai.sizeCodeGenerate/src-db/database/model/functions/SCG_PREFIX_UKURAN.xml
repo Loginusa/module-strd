@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION SCG_PREFIX_UKURAN">
+    <function name="SCG_PREFIX_UKURAN" type="VARCHAR">
+      <parameter name="input" type="NUMERIC" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[v_hasil VARCHAR(100);
+v_pattern VARCHAR(5);
+v_ascii int:=0;
+v_ascii2 int:=0;
+v_ascii3 int:=0;
+
+
+BEGIN
+
+v_pattern := '009';
+
+	WHILE (input > 999) LOOP
+		input := input - 999;
+		v_ascii := 65;
+		v_pattern := '09';
+
+		--IF (input > 99) THEN
+			WHILE (input > 99 AND v_ascii < 90) LOOP
+			    input := input - 99;
+			    v_ascii := v_ascii +1;
+
+			END LOOP;
+		--END IF;
+			
+			    IF (v_ascii = 90 AND input > 99) THEN
+				v_ascii := 65;
+				v_ascii2 := 65;
+				v_pattern := '9';
+				WHILE (input > 99 AND v_ascii < 90) LOOP
+				   input := input - 99;
+				   --v_ascii2 := v_ascii2 +1;
+
+				   WHILE (input > 9 AND v_ascii < 90 AND v_ascii2 < 90) LOOP
+						input := input - 9;
+						v_ascii2 := v_ascii2 +1;
+						--v_ascii := v_ascii +1;
+
+						IF (v_ascii2 = 90 and input > 9 ) THEN
+							v_ascii := v_ascii +1;
+							v_ascii2 := 65;
+						END IF;
+				   END LOOP;
+				--new 
+				   ---IF () 
+				--new
+				  
+				  --end new
+				END LOOP;				   
+			    END IF;
+
+
+			    
+				 IF (input > 9 AND v_ascii >= 65 AND v_ascii <= 90 AND v_ascii2 > 0) THEN					
+				 input := input - 9;
+					--v_ascii := v_ascii +1;
+					--v_ascii2 := v_ascii2 -1;
+				   END IF;
+				   
+
+				   WHILE (input > 9 AND v_ascii =90) LOOP
+					input := input-9;
+					--v_ascii2 := v_ascii2 -1;
+					v_ascii2 := v_ascii2+1;
+
+
+					IF (input > 9 AND v_ascii=90 AND v_ascii2=90 ) THEN
+						input := input -9;
+						v_ascii=65;
+						v_ascii2=65;
+						v_ascii3=65;
+						v_pattern := '';
+
+						-- n
+
+						--end n
+					END IF;
+				   END LOOP; 
+			   
+	END LOOP;
+
+v_hasil = trim(to_char(input,v_pattern));
+
+IF (v_ascii > 0 AND v_ascii2 = 0) THEN 
+	v_hasil = chr(v_ascii)||v_hasil;
+END IF;
+
+IF (v_ascii2 > 0) THEN
+	v_hasil = chr(v_ascii)||chr(v_ascii2)||v_hasil;
+END IF;
+
+IF (v_ascii3 > 0) THEN
+	v_hasil = chr(v_ascii)||chr(v_ascii2)||chr(v_ascii3);
+END IF;
+
+
+
+
+
+
+
+RETURN v_hasil;--||' '||v_ascii||' '||v_ascii2||' '||input;
+END SCG_PREFIX_UKURAN
+]]></body>
+    </function>
+  </database>

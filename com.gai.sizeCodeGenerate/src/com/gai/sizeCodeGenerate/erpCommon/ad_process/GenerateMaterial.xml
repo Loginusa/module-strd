@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*************************************************************************
+* The contents of this file are subject to the Openbravo  Public  License
+* Version  1.1  (the  "License"),  being   the  Mozilla   Public  License
+* Version 1.1  with a permitted attribution clause; you may not  use this
+* file except in compliance with the License. You  may  obtain  a copy of
+* the License at http://www.openbravo.com/legal/license.html
+* Software distributed under the License  is  distributed  on  an "AS IS"
+* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+* License for the specific  language  governing  rights  and  limitations
+* under the License.
+* The Original Code is Openbravo ERP.
+* The Initial Developer of the Original Code is Openbravo SLU
+* All portions are Copyright (C) 2001-2008 Openbravo SLU
+* All Rights Resersved.
+* Contributor(s):  ______________________________________.
+************************************************************************
+-->
+<REPORT>
+  <template file="GenerateMaterial.html"/>
+  <!-- BEGIN UI parameters -->
+  <PARAMETER id="fieldCalendar" name="calendar" attribute="src" replace="es" default="en"/>
+  <PARAMETER id="paramTitle" name="title" replace="xxTitle"/>
+  <PARAMETER id="paramToolBar" name="toolbar" default=""/>
+  <PARAMETER id="paramDirectory" name="directory" default=""/>
+  <PARAMETER id="paramLanguage" name="paramLanguage" default=""/>
+  <PARAMETER id="paramCSS" name="theme" attribute="href" replace="Default"/>
+  <PARAMETER id="tdleftTabs" name="leftTabs" default=""/>
+  <PARAMETER id="paramParentTabContainer" name="parentTabContainer" default=" "/>
+  <PARAMETER id="paramMainTabContainer" name="mainTabContainer" default=" "/>
+  <PARAMETER id="paramChildTabContainer" name="childTabContainer" default=" "/>
+  <PARAMETER id="tdtopButtons" name="navigationBar" default=""/>
+  <PARAMETER id="messageBoxID" name="messageType" attribute="class" replace="yy" default="HIDDEN"/>
+  <PARAMETER id="messageBoxIDTitle" name="messageTitle" default=""/>
+  <PARAMETER id="messageBoxIDMessage" name="messageMessage" default=""/>
+  <!-- END UI parameters -->
+<!--
+  <PARAMETER id="paramOrgID" name="strOrgID" attribute="value"/>
+  <PARAMETER id="paramAssetID" name="strAssetID" attribute="value"/>
+  <PARAMETER id="paramProductID" name="strProductID" attribute="value"/>
+-->
+  <PARAMETER id="paramProductCategoryID" name="strProductCategoryID" attribute="value"/>
+  <PARAMETER id="paramProductId" name="strProductId" attribute="value"/>
+  <!--
+  <PARAMETER id="GMM_Master_Department_ID" name="DepartementID" attribute="value"/>
+  <PARAMETER id="GMM_Master_Department_ID" name="DepartementName" attribute="identifier"/>
+  -->
+  <!--  
+  <PARAMETER id="GAI_Kantor_ID" name="DepartementID" attribute="value"/>
+  <PARAMETER id="GAI_Kantor_ID" name="DepartementName" attribute="identifier"/>
+  -->
+
+  <PARAMETER id="paramDateFrom" name="date" attribute="value"/>
+  <PARAMETER id="paramDateFrom" name="dateFromdisplayFormat" attribute="displayformat" replace="xx"/>
+  <PARAMETER id="paramDateFrom" name="dateFromsaveFormat" attribute="saveformat" replace="yy"/>
+  
+  <PARAMETER id="paramMaterialType" name="SelectMovement"/>
+    <SUBREPORT id="reportMaterialType" name="reportMaterialType" report="org/openbravo/erpCommon/reference/List">
+    <ARGUMENT name="parameterListSelected" withId="paramMaterialType"/>
+  </SUBREPORT>
+
+  <PARAMETER id="C_BPartner_ID" name="BusinessPartnerID" attribute="value"/>
+  <PARAMETER id="C_BPartner_ID" name="BusinessPartnerName" attribute="identifier"/> 
+  <PARAMETER id="C_Tax_ID" name="TaxID" attribute="value"/>
+  <PARAMETER id="C_Tax_ID" name="TaxName" attribute="identifier"/>
+  
+  <PARAMETER id="M_PriceList_ID" name="PriceListID" attribute="value"/>
+  <PARAMETER id="M_PriceList_ID" name="PriceListName" attribute="identifier"/>
+
+  <PARAMETER id="Group_Material_ID" name="GroupMaterialID" attribute="value"/>
+  <PARAMETER id="Group_Material_ID" name="GroupMaterialName" attribute="identifier"/>
+
+  <PARAMETER id="Nama_Bahan_Baku_ID" name="NamaBahanBakuID" attribute="value"/>
+  <PARAMETER id="Nama_Bahan_Baku_ID" name="NamaBahanBakuName" attribute="identifier"/>
+
+  <PARAMETER id="Jenis_Bahan_Baku_ID" name="JenisBahanBakuID" attribute="value"/>
+  <PARAMETER id="Jenis_Bahan_Baku_ID" name="JenisBahanBakuName" attribute="identifier"/>
+
+  <PARAMETER id="Ukuran_Produk_ID" name="UkuranProdukID" attribute="value"/>
+  <PARAMETER id="Ukuran_Produk_ID" name="UkuranProdukName" attribute="identifier"/>
+
+  <PARAMETER id="M_Locator_ID" name="LocatorID" attribute="value"/>
+  <PARAMETER id="M_Locator_ID" name="LocatorName" attribute="identifier"/>
+
+  <PARAMETER id="AD_User_ID" name="UserID" attribute="value"/>
+  <PARAMETER id="AD_User_ID" name="UserName" attribute="identifier"/>
+
+  <!--<PARAMETER id="M_Locator_ID" name="LocatorName"/>
+    <SUBREPORT id="M_Locator_ID" name="LocatorID" report="org/openbravo/erpCommon/reference/List">
+    <ARGUMENT name="parameterListSelectedLoc" withId="M_Locator_ID"/>
+  </SUBREPORT>-->
+</REPORT>

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION SCG_GET_MGROUPKABEL">
+    <function name="SCG_GET_MGROUPKABEL" type="VARCHAR">
+      <parameter name="p_jenis_produk" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[/*************************************************************************
+* The contents of this file are subject to the Openbravo  Public  License
+* Version  1.1  (the  "License"),  being   the  Mozilla   Public  License
+* Version 1.1  with a permitted attribution clause; you may not  use this
+* file except in compliance with the License. You  may  obtain  a copy of
+* the License at http://www.openbravo.com/legal/license.html
+* Software distributed under the License  is  distributed  on  an "AS IS"
+* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+* License for the specific  language  governing  rights  and  limitations
+* under the License.
+* The Original Code is Openbravo ERP.
+* The Initial Developer of the Original Code is Openbravo SLU
+* All portions are Copyright (C) 2010 Openbravo SLU
+* All Rights Reserved.
+* Contributor(s):  ______________________________________.
+************************************************************************/
+  v_hasil varchar2(32):='' ;
+  TYPE RECORD IS REF CURSOR;
+    
+  BEGIN
+  
+	select scg_mgroupkabel.name into v_hasil from scg_mgroupkabel left join scg_jenis_produk on scg_mgroupkabel.scg_mgroupkabel_id = scg_jenis_produk.scg_mgroupkabel_id
+	where scg_jenis_produk_id = p_jenis_produk;
+
+    RETURN v_hasil;
+END SCG_GET_MGROUPKABEL
+]]></body>
+    </function>
+  </database>

@@ -1,0 +1,248 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION GSP_COPY_NETPRICE">
+    <function name="GSP_COPY_NETPRICE" type="NULL">
+      <parameter name="pinstance_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[-- Logistice
+  v_ResultStr VARCHAR2(2000):='';
+  v_Message VARCHAR2(2000):='';
+  v_Record_ID VARCHAR2(32);
+  -- Parameter
+  TYPE RECORD IS REF CURSOR;
+    Cur_Parameter RECORD;
+    Cur_SellingPrice RECORD;
+
+    v_AD_User_ID VARCHAR(32);--OBTG:VARCHAR2--
+   
+    v_MaterialPrice NUMBER;
+    v_VariableCost NUMBER;--OBTG:VARCHAR2--
+    v_Packing NUMBER;
+    v_SellPrice_ID VARCHAR(32) ;--OBTG:VARCHAR2--
+    v_SellPriceLine_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_Netprice VARCHAR2(32);
+    v_Currency_ID VARCHAR2(32);
+    v_Brand_ID VARCHAR2(32);
+    v_Uom_ID VARCHAR2(32);
+    v_Avalan_p NUMBER;
+    v_Fix_cost_p NUMBER;
+    v_Waste_cost_p NUMBER;
+    v_Cof_p NUMBER;
+    v_Profit_p NUMBER;
+
+    v_Avalan NUMBER;
+    v_Fix_cost NUMBER;
+    v_Waste_cost NUMBER;
+    v_Cof NUMBER;
+    v_Profit NUMBER;
+    v_HppValue NUMBER;
+    v_BomValue NUMBER;
+    v_NetSales NUMBER;
+    v_NetUnitPrice NUMBER;
+
+    v_SellingPrice_ID VARCHAR2(32);
+    v_Tanggal DATE;
+    v_Client_ID VARCHAR2(32);
+    v_Org_ID VARCHAR2(32);
+
+
+    S_Avalan_Amount NUMBER; 
+    V_Avalan_Amount NUMBER;
+    V_Material_Amount NUMBER;
+    V_Packing_Amount NUMBER;
+    V_Fixcost_Amount NUMBER; 
+    S_Fixcost_Amount NUMBER; 
+    V_Variable_Amount NUMBER;
+    V_Cof_Amount NUMBER; 
+    S_Cof_Amount NUMBER; 
+    V_Profit_Amount NUMBER; 
+    S_Profit_Amount NUMBER; 
+    V_Waste_Amount NUMBER; 
+    S_Waste_Amount NUMBER; 
+    V_Netsale_Amount NUMBER;
+    V_Freight_Amount NUMBER;
+    S_Freight_Amount NUMBER; 
+    V_Insurance_Amount NUMBER;
+    S_Insurance_Amount NUMBER; 
+    V_Handling_Amount NUMBER; 
+    S_Handling_Amount NUMBER; 
+    V_Sellingprice_Amount NUMBER;
+
+/* Author by : Tias ade Putra (085284734634) */
+
+    END_PROCESS BOOLEAN:=false;
+  BEGIN
+    --  Update AD_PInstance
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Processing ' || PInstance_ID) ;
+    v_ResultStr:='PInstanceNotFound';
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'Y', NULL, NULL) ;
+  BEGIN --BODY
+    -- Get Parameters
+    v_ResultStr:='ReadingParameters';
+    FOR Cur_Parameter IN
+      (SELECT i.Record_ID,
+        p.ParameterName,
+        p.P_String,
+        p.P_Number,
+        p.P_Date,
+        i.CreatedBy AS AD_User_ID
+      FROM AD_PInstance i
+      LEFT JOIN AD_PInstance_Para p
+        ON i.AD_PInstance_ID=p.AD_PInstance_ID
+      WHERE i.AD_PInstance_ID=PInstance_ID
+      ORDER BY p.SeqNo
+      )
+    LOOP
+      v_Record_ID:=Cur_Parameter.Record_ID;
+      v_AD_User_ID:=Cur_Parameter.AD_User_ID;
+    
+  IF(Cur_Parameter.ParameterName='GSP_Selling_Price_ID') THEN
+        v_Netprice:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('GSP_Selling_Price_ID=' || v_Netprice);
+      ELSE
+        DBMS_OUTPUT.PUT_LINE('*** Unknown Parameter=' || Cur_Parameter.ParameterName) ;
+      END IF;
+      
+    END LOOP; -- Get Parameter
+    DBMS_OUTPUT.PUT_LINE('  Record_ID=' || v_Record_ID) ;
+
+   SELECT gsp_selling_price_id,tanggal,c_currency_id,ad_client_id,ad_org_id 
+   INTO v_SellingPrice_ID,v_Tanggal,v_Currency_ID,v_Client_ID,v_Org_ID
+   FROM gsp_selling_price WHERE gsp_selling_price_id = v_Record_ID;
+    
+    FOR Cur_SellingPrice IN
+      (SELECT gspl.m_product_id,gsp.tanggal,gsp.c_currency_id,gsp.ad_client_id,gsp.ad_org_id,gspl.qty
+            FROM gsp_sellprice_line gspl,gsp_selling_price gsp
+            WHERE gsp.gsp_selling_price_id = gspl.gsp_selling_price_id
+            AND gsp.gsp_selling_price_id = v_Netprice
+      )
+    LOOP
+       
+        Ad_Sequence_Next('GSP_Selling_Price', Cur_SellingPrice.AD_Client_ID, v_SellPrice_ID);
+        Ad_Sequence_Next('GSP_SelPrice_Line', Cur_SellingPrice.AD_Client_ID, v_SellPriceLine_ID);
+   
+	-- Mengambil total Material Price
+     SELECT
+		SUM(C_CURRENCY_CONVERT((COALESCE(gsp_getprice_version(TO_DATE(v_Tanggal),c.m_productbom_id),0) 
+		* COALESCE(c.bomqty,0)),
+		gsp_getcurrency_version(TO_DATE(v_Tanggal),c.m_productbom_id),Cur_SellingPrice.c_currency_id,
+		TO_DATE(v_Tanggal), NULL,c.ad_client_id, c.ad_org_id)) INTO v_MaterialPrice
+        FROM m_product a
+		LEFT JOIN m_product_bom c ON (a.m_product_id = c.m_product_id AND c.isactive='Y' AND c.em_gsp_isrm='Y')
+		LEFT JOIN m_productprice b ON (c.m_productbom_id = b.m_product_id)
+		LEFT JOIN m_brand mb ON (mb.m_brand_id = a.m_brand_id)
+		LEFT JOIN c_uom cu ON (cu.c_uom_id = a.c_uom_id),
+		m_pricelist_version d
+      WHERE a.m_product_id = Cur_SellingPrice.m_product_id
+		AND b.m_pricelist_version_id = d.m_pricelist_version_id
+		AND b.m_pricelist_version_id = gsp_getpricelist_version(TO_DATE(v_Tanggal),c.m_productbom_id);
+
+-- Mengambil total Packing
+
+    SELECT
+      SUM(C_CURRENCY_CONVERT((COALESCE(gsp_getprice_version(TO_DATE(v_Tanggal),
+      c.m_productbom_id),0) * COALESCE(c.bomqty,0)),gsp_getcurrency_version(TO_DATE(v_Tanggal),
+      c.m_productbom_id),Cur_SellingPrice.c_currency_id,TO_DATE(v_Tanggal), NULL,c.ad_client_id, c.ad_org_id)) 
+				INTO v_Packing        
+		FROM m_product a
+			LEFT JOIN m_product_bom c ON (a.m_product_id = c.m_product_id AND c.isactive='Y' AND c.em_gsp_isrm='N')
+			LEFT JOIN m_productprice b ON (c.m_productbom_id = b.m_product_id)
+			LEFT JOIN m_brand mb ON (mb.m_brand_id = a.m_brand_id)
+			LEFT JOIN c_uom cu ON (cu.c_uom_id = a.c_uom_id)  
+			,m_pricelist_version d  
+		WHERE a.m_product_id = Cur_SellingPrice.m_product_id
+			AND b.m_pricelist_version_id = d.m_pricelist_version_id
+			AND b.m_pricelist_version_id = gsp_getpricelist_version(TO_DATE(v_Tanggal),c.m_productbom_id);
+
+
+           SELECT 
+		C_CURRENCY_CONVERT(COALESCE(gvc.value,0),gvc.c_currency_id,Cur_SellingPrice.c_currency_id,
+		TO_DATE(v_Tanggal), NULL,m.ad_client_id,m.ad_org_id) INTO v_VariableCost
+			FROM m_product m
+			LEFT JOIN gvc_variable_cost gvc ON gvc.m_product_id= m.m_product_id
+		WHERE m.m_product_id = Cur_SellingPrice.m_product_id;
+
+        -- Mengambil total Setup Attribute Net Price
+
+           SELECT avalan_p,fix_cost_p,
+		  waste_cost_p,cof_p,profit_p
+		  INTO
+		  v_Avalan_p,v_Fix_cost_p,
+		  v_Waste_cost_p,v_Cof_p,v_Profit_p
+           FROM gsp_sprice_line;
+
+           v_Avalan := (COALESCE(v_Avalan_p,0) * COALESCE(v_MaterialPrice,0)) / 100;
+           v_Waste_cost := (COALESCE(v_Waste_cost_p,0) * COALESCE(v_MaterialPrice,0)) / 100;
+
+           v_BomValue := (COALESCE(v_MaterialPrice,0) + COALESCE(v_Packing,0));
+           v_Cof := (COALESCE(v_Cof_p,0) * COALESCE(v_BomValue,0)) / 100;
+           v_Fix_cost := (COALESCE(v_Fix_cost_p,0) * COALESCE(v_BomValue,0)) / 100;
+           v_HppValue := (COALESCE(v_Avalan,0) + COALESCE(v_BomValue,0) + COALESCE(v_Cof,0) + COALESCE(v_Fix_cost,0) + COALESCE(v_VariableCost,0));
+           v_Profit := (COALESCE(v_Profit_p,0) * COALESCE(v_HppValue,0)) / 100;
+           v_NetSales := (COALESCE(v_HppValue,0) + COALESCE(v_Profit,0));
+	   v_NetUnitPrice := COALESCE(v_NetSales,0)/1000;
+
+
+        SELECT m_brand_id,c_uom_id INTO v_Brand_ID,v_Uom_ID 
+        FROM m_product WHERE m_product_id = Cur_SellingPrice.m_product_id;
+
+
+        INSERT
+        INTO gsp_sellprice_line
+          (gsp_sellprice_line_id,ad_client_id,ad_org_id,isactive,
+           created,createdby,updated,updatedby,qty,material_price,avalan_v,avalan_p,packing,
+           fix_cost_v,fix_cost_p,variabel_cost,waste_cost_v,waste_cost_p,cof_v,cof_p,profit_v,profit_p,
+           net_sales,unit_price,gsp_selling_price_id,m_product_id,m_brand_id,c_uom_id,bom_v,hpp_v
+            )
+         VALUES(v_SellPriceLine_ID,
+         Cur_SellingPrice.ad_client_id
+         ,Cur_SellingPrice.ad_org_id,
+         'Y',
+         now(),
+         v_AD_User_ID,
+         now(),
+         v_AD_User_ID,
+         Cur_SellingPrice.qty,
+         C_CURRENCY_CONVERT(ROUND(v_MaterialPrice,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+         C_CURRENCY_CONVERT(ROUND(v_Avalan,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+         v_Avalan_p,
+         C_CURRENCY_CONVERT(ROUND(v_Packing,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+         C_CURRENCY_CONVERT(ROUND(v_Fix_cost,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+	 v_Fix_cost_p,
+	 C_CURRENCY_CONVERT(ROUND(v_VariableCost,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+         C_CURRENCY_CONVERT(ROUND(v_Waste_cost,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+	 v_Waste_cost_p,
+         C_CURRENCY_CONVERT(ROUND(v_Cof,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+         v_Cof_p,
+         C_CURRENCY_CONVERT(ROUND(v_Profit,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+         v_Profit_p,
+         C_CURRENCY_CONVERT(ROUND(v_NetSales,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+         C_CURRENCY_CONVERT(ROUND(v_NetUnitPrice,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+         v_Record_ID,
+         Cur_SellingPrice.m_product_id,
+         v_Brand_ID,
+         v_Uom_ID,
+         C_CURRENCY_CONVERT(ROUND(v_BomValue,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID),
+         C_CURRENCY_CONVERT(ROUND(v_HppValue,2),Cur_SellingPrice.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_SellingPrice.c_currency_id)),TO_DATE(v_Tanggal), NULL,v_Client_ID,v_Org_ID)
+         );   
+
+    END LOOP;
+
+   
+    --<<END_PROCESS>>
+    --  Update AD_PInstance
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Finished ' || v_Message) ;
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 1, v_Message) ;
+    RETURN;
+  END; --BODY
+EXCEPTION
+WHEN OTHERS THEN
+
+  v_ResultStr:= '@ERROR=' || SQLERRM;
+  DBMS_OUTPUT.PUT_LINE(v_ResultStr) ;
+  AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 0, v_ResultStr) ;
+  RETURN;
+END GSP_COPY_NETPRICE
+]]></body>
+    </function>
+  </database>

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION GSP_CURRENCY_PRODUCT">
+    <function name="GSP_CURRENCY_PRODUCT" type="VARCHAR">
+      <parameter name="p_field_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="p_tipelamakerja" type="NUMERIC" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[/*************************************************************************
+* The contents of this file are subject to the Openbravo  Public  License
+* Version  1.1  (the  "License"),  being   the  Mozilla   Public  License
+* Version 1.1  with a permitted attribution clause; you may not  use this
+* file except in compliance with the License. You may obtain  a copy of
+* the License at http://www.openbravo.com/legal/license.html
+* Software distributed under the License  is  distributed  on  an "AS IS"
+* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+* License for the specific  language  governing  rights  and  limitations
+* under the License.
+* The Original Code is Openbravo ERP.
+* The Initial Developer of the Original Code is Openbravo SLU
+* All portions are Copyright (C) 2012 Openbravo SLU
+* All Rights Reserved.
+* Contributor(s):  ______________________________________.
+************************************************************************/
+
+v_hasil VARCHAR(500);
+BEGIN
+    
+    IF  p_tipelamakerja = 1 THEN
+	
+	select c_currency.iso_code INTO v_hasil
+	from M_Pricelist
+	left join c_currency on c_currency.c_currency_id = M_Pricelist.c_currency_id
+	where M_Pricelist.M_Pricelist_id = p_field_id;
+                
+    ELSE
+
+        v_hasil := 'Field Error, harap cek di Table And Column > SqlLogic, apakah parameter ke 2 sudah benar ?';
+    END IF;
+
+    --em_str_org_tipelogi_id
+
+If (v_hasil is NULL) then
+v_hasil:='';
+END IF;
+RETURN v_hasil;
+END GSP_CURRENCY_PRODUCT
+]]></body>
+    </function>
+  </database>

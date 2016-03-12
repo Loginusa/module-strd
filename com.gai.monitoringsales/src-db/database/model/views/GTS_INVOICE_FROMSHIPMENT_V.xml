@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <database name="VIEW GTS_INVOICE_FROMSHIPMENT_V">
+    <view name="GTS_INVOICE_FROMSHIPMENT_V"><![CDATA[SELECT mi.m_inout_id AS gts_invoice_fromshipment_v_id, mi.ad_client_id, mi.ad_org_id, mi.updated, mi.updatedby, mi.isactive, mi.created, mi.createdby, mi.m_inout_id, ci.c_invoice_id, ci.documentno, ci.dateinvoiced, ci.docstatus FROM m_inout mi LEFT JOIN m_inoutline mil ON mil.m_inout_id = mi.m_inout_id LEFT JOIN c_invoiceline cil ON cil.m_inoutline_id = mil.m_inoutline_id LEFT JOIN c_invoice ci ON ci.c_invoice_id = cil.c_invoice_id AND ci.issotrx = 'Y' GROUP BY mi.m_inout_id, ci.c_invoice_id, mi.ad_client_id, mi.ad_org_id, mi.updated, mi.updatedby, mi.isactive, mi.created, mi.createdby, ci.documentno, ci.dateinvoiced, ci.docstatus]]></view>
+  </database>

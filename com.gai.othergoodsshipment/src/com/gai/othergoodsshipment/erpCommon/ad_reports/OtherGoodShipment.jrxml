@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OtherGoodShipment" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="0.9090909090909117"/>
+	<property name="ireport.x" value="17"/>
+	<property name="ireport.y" value="112"/>
+	<parameter name="DOCUMENT_ID" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+  (select coalesce(cast(count(print_history.group_print)+1 as character),'') as printto
+  from print_history
+  where print_history.code_print_id = m_inventory.M_INVENTORY_ID and print_history.group_print = 'Other Goods Shipment'),
+  TO_CHAR(now(),'YYYY / MM / dd') as printed,
+m_inventory.name as nodocument,
+to_date(to_char(to_timestamp(m_inventory.MOVEMENTDATE)),'dd-MM-yyyy') as tgl,
+m_inventory.description as kend,
+m_warehouse.name as gudang,
+c_location.city as gudangC,
+
+mp.VALUE,
+COALESCE((SELECT M_PRODUCT_CUSTOMER.NAME
+    FROM M_PRODUCT_CUSTOMER
+    WHERE M_PRODUCT_CUSTOMER.M_PRODUCT_ID=m_inventoryline.M_PRODUCT_ID)
+    ,mp.NAME) AS NAME,
+CAST(m_inventoryline.qtybook AS INTEGER) AS MOVEMENTQTY,
+m_inventoryline.DESCRIPTION AS KET,
+m_brand.description AS merekproduk,
+scg_jenis_produk.name AS jnsproduk,
+scg_size.name AS sizeproduk,
+c_uom.uomsymbol AS uom,
+m_product_category.value AS categoryV,
+m_product_bom.bomqty AS categoryqty,
+m_inventoryline.description AS ket2
+
+FROM m_inventory
+
+FULL OUTER JOIN m_inventoryline ON m_inventoryline.m_inventory_id = m_inventory.m_inventory_id
+LEFT JOIN m_product mp ON m_inventoryline.m_product_id = mp.m_product_id
+LEFT JOIN m_product_bom on m_product_bom.m_product_id = mp.m_product_id and em_gsp_isrm='N'
+LEFT JOIN m_product pr1 on pr1.m_product_id = m_product_bom.m_productbom_id
+LEFT JOIN m_product_category on m_product_category.m_product_category_id = pr1.m_product_category_id
+LEFT JOIN c_uom ON c_uom.c_uom_id = mp.c_uom_id
+LEFT JOIN m_brand ON m_brand.m_brand_id = mp.m_brand_id
+LEFT JOIN scg_size ON scg_size.scg_size_id = mp.em_scg_size_id
+LEFT JOIN scg_jenis_produk on scg_jenis_produk.scg_jenis_produk_id = mp.em_scg_jenis_produk_id
+LEFT JOIN m_warehouse ON m_warehouse.m_warehouse_id = m_inventory.m_warehouse_id
+LEFT JOIN c_location ON c_location.c_location_id = m_warehouse.c_location_id
+LEFT JOIN GMM_DEPARTEMENT GD ON GD.GMM_DEPARTEMENT_ID = m_inventory.EM_GMM_DEPARTEMENT_ID,
+AD_ORG AO, AD_USER AU
+
+WHERE AO.AD_ORG_ID = m_inventory.AD_ORG_ID
+AND AU.AD_USER_ID = m_inventory.CREATEDBY
+AND m_inventory.EM_GIN_DOCTYPE ='O'
+AND m_inventory.M_INVENTORY_ID IN ($P!{DOCUMENT_ID})]]>
+	</queryString>
+	<field name="printto" class="java.lang.String"/>
+	<field name="printed" class="java.lang.String"/>
+	<field name="nodocument" class="java.lang.String"/>
+	<field name="tgl" class="java.sql.Date"/>
+	<field name="kend" class="java.lang.String"/>
+	<field name="gudang" class="java.lang.String"/>
+	<field name="gudangc" class="java.lang.String"/>
+	<field name="value" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="movementqty" class="java.lang.Integer"/>
+	<field name="ket" class="java.lang.String"/>
+	<field name="merekproduk" class="java.lang.String"/>
+	<field name="jnsproduk" class="java.lang.String"/>
+	<field name="sizeproduk" class="java.lang.String"/>
+	<field name="uom" class="java.lang.String"/>
+	<field name="categoryv" class="java.lang.String"/>
+	<field name="categoryqty" class="java.math.BigDecimal"/>
+	<field name="ket2" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="33" splitType="Stretch">
+			<staticText>
+				<reportElement x="257" y="10" width="248" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="14" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[S U R A T  J A L A N]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="645" y="10" width="105" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Hal.]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="755" y="10" width="30" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="111" splitType="Stretch">
+			<staticText>
+				<reportElement x="17" y="17" width="105" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NOMOR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="17" y="37" width="105" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TANGGAL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="524" y="17" width="105" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[KEPADA YTH.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="17" y="77" width="105" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO KEND]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="122" y="17" width="12" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="false"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="122" y="37" width="12" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="false"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="122" y="77" width="12" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="false"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="134" y="17" width="343" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nodocument} == null ? "" : $F{nodocument}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="134" y="37" width="343" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{tgl}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="524" y="37" width="262" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{gudang} == null ? "" : $F{gudang}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="524" y="57" width="262" height="54"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{gudangc} == null ? "" : $F{gudangc}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="134" y="77" width="343" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ket} == null ? "" : $F{ket}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="17" y="57" width="105" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO ORDER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="122" y="57" width="12" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="false"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="134" y="57" width="343" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="41" splitType="Stretch">
+			<staticText>
+				<reportElement x="478" y="12" width="73" height="29"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PKG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="155" y="12" width="323" height="29"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NAMA BARANG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="15" y="12" width="41" height="29"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="56" y="12" width="99" height="29"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[QTY]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="551" y="12" width="235" height="29"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[KETERANGAN]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="27" splitType="Stretch">
+			<textField>
+				<reportElement x="164" y="0" width="314" height="27"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name} == null ? "" : $F{name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="478" y="0" width="46" height="27"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{categoryqty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="551" y="0" width="235" height="27"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{ket2} == null ? "" : $F{ket2}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="56" y="0" width="99" height="27"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{movementqty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="15" y="0" width="41" height="27"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{REPORT_COUNT}.toString()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="155" y="0" width="9" height="27"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="524" y="0" width="27" height="27"/>
+				<box>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{categoryv} == null ? "" : $F{categoryv}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="271" splitType="Stretch">
+			<staticText>
+				<reportElement x="599" y="203" width="182" height="20"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[(                                                   )]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="599" y="131" width="182" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<text><![CDATA[Kebag Gudang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="131" width="182" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<text><![CDATA[Tanda Terima]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="205" y="131" width="182" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<text><![CDATA[Sopir]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="402" y="131" width="182" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="11"/>
+				</textElement>
+				<text><![CDATA[Security]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="402" y="203" width="182" height="20"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[(                                                   )]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="205" y="203" width="182" height="20"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[(                                                   )]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="203" width="182" height="20"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[(                                                   )]]></text>
+			</staticText>
+			<line>
+				<reportElement x="11" y="124" width="770" height="1"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="598" y="252" width="34" height="19"/>
+				<textElement verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{printto}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="547" y="252" width="51" height="19"/>
+				<textElement verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[Cetak Ke :]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="733" y="252" width="69" height="19"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{printed}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="633" y="252" width="100" height="19"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Printed document : "]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

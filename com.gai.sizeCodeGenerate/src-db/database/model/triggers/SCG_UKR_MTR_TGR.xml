@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER SCG_UKR_MTR_TGR">
+    <trigger name="SCG_UKR_MTR_TGR" table="SCG_UKURANMATERIAL" fires="after" insert="true" update="false" delete="false" foreach="row">
+      <body><![CDATA[
+
+v_kode character varying(32):=null;
+
+i record;
+
+BEGIN
+
+select scg_random_string(4) into v_kode;
+    
+   FOR i IN 
+( SELECT value
+	FROM scg_ukuranmaterial WHERE scg_ukuranmaterial_ID != :NEW.scg_ukuranmaterial_ID
+)
+
+ LOOP
+
+IF (v_kode = i.value ) THEN
+	 RAISE_APPLICATION_ERROR(-20000,'@SCG_GenerateKode@');
+	 END IF;
+
+END LOOP;
+
+
+
+	  	UPDATE scg_ukuranmaterial SET value = v_kode WHERE scg_ukuranmaterial_id = :NEW.scg_ukuranmaterial_ID;
+
+	
+
+  -- Deleting
+EXCEPTION
+WHEN NO_DATA_FOUND THEN
+  RAISE_APPLICATION_ERROR(-20000, '@20014@') ;
+END SCG_UKR_MTR_TGR
+]]></body>
+    </trigger>
+  </database>

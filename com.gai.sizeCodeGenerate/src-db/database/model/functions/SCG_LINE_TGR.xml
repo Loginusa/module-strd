@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION SCG_LINE_TGR">
+    <function name="SCG_LINE_TGR" type="VARCHAR">
+      <body><![CDATA[v_nama character varying(32);
+v_line NUMBER;
+BEGIN
+    
+    IF AD_isTriggerEnabled()='N' THEN IF TG_OP = 'DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF; 
+    END IF;
+IF (TG_OP ='INSERT') THEN
+
+	Select value into v_nama from scg_mgroupkabel where scg_mgroupkabel_Id = NEW.scg_mgroupkabel_Id;
+
+	if (v_nama is null) THEN
+		v_line = 0;
+	ELSif (v_nama = 'L') THEN
+		v_line = 10;
+	ELSIF (v_nama = 'M') THEN
+		v_line = 20;
+	ELSif (v_nama = 'H') THEN
+		v_line = 30;
+	ELSif (v_nama = 'B') THEN
+		v_line = 40;
+	ELSif (v_nama = 'F') THEN
+		v_line = 50;
+	ELSif (v_nama = 'R') THEN
+		v_line = 60;
+	
+	END IF;
+	update scg_tegangan_pengenal set line = v_line where scg_mgroupkabel_Id = NEW.scg_mgroupkabel_Id;
+	 
+END IF;
+
+IF (TG_OP ='UPDATE') THEN
+
+IF (OLD.scg_mgroupkabel_Id != NEW.scg_mgroupkabel_Id) THEN
+
+
+	Select value into v_nama from scg_mgroupkabel where scg_mgroupkabel_Id = NEW.scg_mgroupkabel_Id;
+
+	if (v_nama is null) THEN
+		v_line = 0;
+	ELSif (v_nama = 'L') THEN
+		v_line = 10;
+	ELSIF (v_nama = 'M') THEN
+		v_line = 20;
+	ELSif (v_nama = 'H') THEN
+		v_line = 30;
+	ELSif (v_nama = 'B') THEN
+		v_line = 40;
+	ELSif (v_nama = 'F') THEN
+		v_line = 50;
+	ELSif (v_nama = 'R') THEN
+		v_line = 60;
+	
+	END IF;
+	update scg_tegangan_pengenal set line = v_line where scg_mgroupkabel_Id = NEW.scg_mgroupkabel_Id;
+	 
+  END IF;
+  
+END IF;
+
+
+
+  -- Deleting
+IF TG_OP = 'DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF; 
+
+EXCEPTION
+WHEN NO_DATA_FOUND THEN
+  RAISE_APPLICATION_ERROR(-20000, '@20014@') ;
+IF TG_OP = 'DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;
+END SCG_LINE_TGR
+]]></body>
+    </function>
+  </database>

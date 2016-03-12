@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER GMB_MASTER_BOM_TRG">
+    <trigger name="GMB_MASTER_BOM_TRG" table="GMB_BOM" fires="before" insert="true" update="true" delete="false" foreach="row">
+      <body><![CDATA[
+ v_Value VARCHAR(32);
+ 
+ v_message VARCHAR(100);
+
+  Cur_Value RECORD;
+  
+        
+BEGIN
+    
+    IF AD_isTriggerEnabled()='N' THEN RETURN;
+    END IF;
+ 
+
+IF (INSERTING OR UPDATING) THEN    
+	FOR Cur_Value IN 
+	 SELECT name,m_product_id  FROM gmb_bom WHERE gmb_bom_id <> :NEW.gmb_bom_id
+	LOOP 	 
+		IF (:NEW.name=Cur_Value.name OR :NEW.m_product_id=Cur_Value.m_product_id) THEN
+		 RAISE_APPLICATION_ERROR(-20000,'@SCG_KodeNamaError@');
+		END IF;
+
+	END LOOP;
+END IF;
+
+
+
+
+END GMB_MASTER_BOM_TRG
+]]></body>
+    </trigger>
+  </database>

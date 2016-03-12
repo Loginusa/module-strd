@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION PRINT_HISTORY_PROC">
+    <function name="PRINT_HISTORY_PROC" type="VARCHAR">
+      <parameter name="v_code_print_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="v_group_print" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="v_user_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[V_PRINT_HISTORY_ID varchar2(32):='';
+  v_client_id VARCHAR(32):='';
+  v_org_id VARCHAR(32):='';
+  v_DOCUMENTNO VARCHAR(32):='';
+  v_docsubtypeso VARCHAR(32):='';
+  v_issotrx_shipment VARCHAR(32):='';
+  --created by Nurul Hidayat crmspy@gmail.com || PT.Global Anugerah Indonesia
+    
+  BEGIN
+  Ad_Sequence_Next('PRINT_HISTORY', v_Client_ID, V_PRINT_HISTORY_ID);
+
+
+    IF v_group_print='Shipment' THEN
+        SELECT ad_client_id,ad_org_id,documentno,issotrx into v_client_id,v_org_id,v_DOCUMENTNO,v_issotrx_shipment from m_inout where m_inout_id = v_code_print_id ;
+	
+	if v_issotrx_shipment='Y' THEN v_group_print := 'Good Shipment'; 
+	ELSIF v_issotrx_shipment='N' THEN
+		v_group_print := 'Good Receipt'; 
+	END IF;
+    ELSIF v_group_print='Other Goods Shipment' or v_group_print='Other Goods Receipt-@our_ref@' or v_group_print ='Laporan Hasil Produksi-@our_ref@'THEN
+        
+        SELECT ad_client_id,ad_org_id,name into v_client_id,v_org_id,v_DOCUMENTNO from m_inventory  where m_inventory_id = v_code_print_id ;
+
+    ELSIF v_group_print='SellingPriceReport' THEN
+        SELECT ad_client_id,ad_org_id,documentno into v_client_id,v_org_id,v_DOCUMENTNO from gsp_selling_price where gsp_selling_price_id = v_code_print_id ;
+	v_group_print := 'Selling Price';
+    ELSIF v_group_print='DetailSellingPrice' THEN
+	SELECT ad_client_id,ad_org_id,documentno into v_client_id,v_org_id,v_DOCUMENTNO from gsp_selling_price where gsp_selling_price_id = v_code_print_id ;
+	v_group_print := 'Selling Price Detail';
+    ELSIF v_group_print='Sales Quotation' or v_group_print='Sales Order' THEN
+        SELECT c_order.ad_client_id,c_order.ad_org_id,c_order.documentno,c_doctype.docsubtypeso into v_client_id,v_org_id,v_DOCUMENTNO,v_docsubtypeso from c_order LEFT JOIN c_doctype ON c_order.c_doctype_id = c_doctype.c_doctype_id where c_order_id = v_code_print_id ;
+    ELSIF v_group_print='Sales Invoice' THEN
+        SELECT ad_client_id,ad_org_id,documentno into v_client_id,v_org_id,v_DOCUMENTNO from c_invoice where c_invoice_id = v_code_print_id ;
+    END IF;
+
+    if v_docsubtypeso='OB' THEN v_group_print := 'Sales Quotation'; END IF;
+    INSERT INTO PRINT_HISTORY (
+      PRINT_HISTORY_ID, AD_CLIENT_ID, AD_ORG_ID,
+      ISACTIVE, CREATED,  CREATEDBY,  UPDATED,  UPDATEDBY,
+      group_print, printed_no, code_print
+    ) VALUES (
+      V_PRINT_HISTORY_ID, v_Client_ID, v_Org_ID,
+      'Y', now(), v_User_ID, now(), v_User_ID,
+      v_group_print,v_DOCUMENTNO,v_code_print_id
+    );
+    RETURN 1;
+END PRINT_HISTORY_PROC
+]]></body>
+    </function>
+  </database>

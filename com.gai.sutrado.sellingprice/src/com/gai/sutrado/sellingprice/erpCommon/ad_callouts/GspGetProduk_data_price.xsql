@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ *************************************************************************
+GAI - Nurdin
+ ************************************************************************
+-->
+
+<SqlClass name="GspGetProdukDataPrice" package="com.gai.sutrado.sellingprice.erpCommon.ad_callouts">
+   <SqlClassComment></SqlClassComment>
+   <SqlMethod name="select" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+        select 
+        gsp.pricelistidr,
+        C_CURRENCY_CONVERT('1','303',TO_CHAR('100'),TO_DATE(COALESCE(NOW(), NOW())), NULL,gsp.ad_client_id, gsp.ad_org_id) AS idr
+        from gsp_price_product gsp
+        where gsp.gsp_price_product_id = ?
+      </Sql>
+      <Parameter name="mdesimalIDR" type="replace" optional="true" after="C_CURRENCY_CONVERT(" text="'1'"/>
+      <Parameter name="mId"/>
+   </SqlMethod>
+<!--
+ *************************************************************************
+GAI - Kris
+ ************************************************************************
+-->
+  <SqlMethod name="conv" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+        select 
+        
+        C_CURRENCY_CONVERT('1','100',TO_CHAR('303'),TO_DATE(COALESCE(NOW(), NOW())), NULL,gsp.ad_client_id, gsp.ad_org_id) AS idr
+        from gsp_master_price gsp
+        where gsp.gsp_master_price_id = ?
+      </Sql>
+      <Parameter name="mdesimalIDR" type="replace" optional="true" after="C_CURRENCY_CONVERT(" text="'1'"/>
+      <Parameter name="mId"/>
+   </SqlMethod>
+
+</SqlClass>

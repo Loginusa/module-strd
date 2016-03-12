@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER SCG_ATTRIBUTE_GRUP_MTR">
+    <trigger name="SCG_ATTRIBUTE_GRUP_MTR" table="SCG_GROUP_MATERIAL" fires="before" insert="true" update="true" delete="false" foreach="row">
+      <body><![CDATA[
+ v_Value VARCHAR(32);
+ 
+ v_message VARCHAR(100);
+
+  Cur_Value RECORD;
+  
+        
+BEGIN
+    
+    IF AD_isTriggerEnabled()='N' THEN RETURN;
+    END IF;
+ 
+
+IF (INSERTING OR UPDATING) THEN    
+	FOR Cur_Value IN 
+	 SELECT m_product_category_id,name FROM scg_group_material WHERE scg_group_material_id <> :NEW.scg_group_material_id
+	LOOP 	 
+		IF (:NEW.name=Cur_Value.name) THEN
+		 RAISE_APPLICATION_ERROR(-20000,'@SCG_KodeNamaError@');
+		END IF;
+
+	END LOOP;
+END IF;
+
+
+
+
+END SCG_ATTRIBUTE_GRUP_MTR
+]]></body>
+    </trigger>
+  </database>

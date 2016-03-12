@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER SCG_ATTRIBUTE_UKURANMATERIAL">
+    <trigger name="SCG_ATTRIBUTE_UKURANMATERIAL" table="SCG_UKURANMATERIAL" fires="before" insert="true" update="true" delete="false" foreach="row">
+      <body><![CDATA[
+ v_Value VARCHAR(32);
+ 
+ v_message VARCHAR(100);
+ TYPE RECORD IS REF CURSOR;
+  Cur_Value RECORD;
+  
+        
+BEGIN
+    
+    IF AD_isTriggerEnabled()='N' THEN RETURN;
+    END IF;
+ 
+
+IF (INSERTING OR UPDATING) THEN    
+	FOR Cur_Value IN 
+	 SELECT value,name,scg_group_material_id as id FROM scg_ukuranmaterial WHERE scg_ukuranmaterial_id <> :NEW.scg_ukuranmaterial_id
+	LOOP 	 
+		IF (:NEW.Value=Cur_Value.value OR ( :NEW.scg_group_material_id=Cur_Value.id AND :NEW.Name=Cur_Value.Name)) THEN
+		 RAISE_APPLICATION_ERROR(-20000,'@SCG_KodeNamaError@');
+		END IF;
+
+	END LOOP;
+END IF;
+
+/* IF (UPDATING) THEN
+	IF (:NEW.Value=:OLD.Value) THEN
+		RAISE EXCEPTION '%', 'Kode Attribute sudah ada'
+	END IF;
+ END IF;*/
+  
+
+
+END SCG_ATTRIBUTE_UKURANMATERIAL
+]]></body>
+    </trigger>
+  </database>

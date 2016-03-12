@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION GSP_SELLPRICE_TRG">
+    <function name="GSP_SELLPRICE_TRG" type="VARCHAR">
+      <body><![CDATA[v_masa_kerja VARCHAR2(32);
+  v_masa_golongan VARCHAR2(32);
+  v_masa_jabatan VARCHAR2(32);
+  v_tmt_pengangkatan DATE;
+  v_tmt_golongan DATE;
+  v_tmt_jabatan DATE;
+  --v_interval INTERVAL;
+  
+  
+   
+BEGIN
+
+  IF AD_isTriggerEnabled()='N' THEN IF TG_OP = 'DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF; 
+  END IF;
+
+ v_tmt_pengangkatan := new.tmt_pengangkatan;
+ v_tmt_golongan := new.tmt_golongan;
+ v_tmt_jabatan := new.tmt_jabatan;
+
+
+IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE'  THEN
+
+UPDATE GSP_SELLING_PRICE SET avalan_v = avalan_v + NEW.avalan_v WHERE GSP_SELLING_PRICE_ID = NEW.GSP_SELLING_PRICE_ID;
+
+END IF;
+
+   
+ IF TG_OP = 'DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;
+END GSP_SELLPRICE_TRG
+]]></body>
+    </function>
+  </database>

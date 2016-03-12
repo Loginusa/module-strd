@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION GSQ_GENERATE_BUTTON">
+    <function name="GSQ_GENERATE_BUTTON" type="NULL">
+      <parameter name="pinstance_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[cur RECORD;
+  cur1 RECORD;
+  v_ResultStr VARCHAR2(2000):='';
+  v_Message VARCHAR(2000):='';
+  Cur_Parameter RECORD;
+  v_Record_ID VARCHAR(32);
+  v_AD_User_ID VARCHAR(32) ;
+  v_ClientID varchar2(32) ;
+  v_OrgID varchar2(32) ;
+  v_Processed VARCHAR2(60) ;
+  v_order_id VARCHAR(32) ;
+  v_doctype_id VARCHAR(32);
+  v_nodoc VARCHAR(32);
+  v_tax VARCHAR(32);
+BEGIN
+ DBMS_OUTPUT.PUT_LINE('Updating PInstance - Processing ' || PInstance_ID) ;
+    v_ResultStr:='PInstanceNotFound';
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'Y', NULL, NULL) ;
+
+    FOR Cur_Parameter IN
+      (SELECT i.Record_ID,
+        p.ParameterName,
+        p.P_String,
+        p.P_Number,
+        p.P_Date,
+        i.CreatedBy AS AD_User_ID
+      FROM AD_PInstance i
+      LEFT JOIN AD_PInstance_Para p
+        ON i.AD_PInstance_ID=p.AD_PInstance_ID
+      WHERE i.AD_PInstance_ID=PInstance_ID
+      ORDER BY p.SeqNo
+      )
+    LOOP
+      v_Record_ID:=Cur_Parameter.Record_ID;
+      v_AD_User_ID:=Cur_Parameter.AD_User_ID;
+
+    END LOOP; -- Get Parameter
+
+     IF(Cur_Parameter.ParameterName='p_tax') THEN
+        v_tax:=Cur_Parameter.P_String;
+        --RAISE NOTICE '%', v_tax ;
+      ELSE
+        DBMS_OUTPUT.PUT_LINE('*** Unknown Parameter=' || Cur_Parameter.ParameterName) ;
+      END IF;
+    
+   FOR cur IN (
+	select gsp.c_doctypetarget_id as doctarget,gsp.c_bpartner_id as bpid,now(),cbl.c_bpartner_location_id as location, 
+	cb.c_paymentterm_id as payterm,cb.fin_paymentmethod_id as method, cb.m_pricelist_id as price , gsp.documentno as docum
+	
+	from gsp_selling_price gsp
+	
+	left join c_bpartner cb on cb.c_bpartner_id = gsp.c_bpartner_id
+	left join c_bpartner_location cbl on cbl.c_bpartner_id = gsp.c_bpartner_id
+	where gsp_selling_price_id =v_Record_ID
+	 ) LOOP
+
+	    SELECT * into v_doctype_id FROM ad_get_doctype('A345AEF5BE9B40BEB649E400283127C8','0','SOO','OB');--client,org docbasetype, docsubtype
+
+	    ad_sequence_doctype(v_doctype_id, 'A345AEF5BE9B40BEB649E400283127C8', 'Y', v_nodoc);-- id doctype, client,issotrx
+	    
+	    INSERT INTO c_order(
+            c_order_id, ad_client_id, ad_org_id, isactive, created, createdby, 
+            updated, updatedby, c_doctypetarget_id, documentno,c_bpartner_id,dateordered,c_bpartner_location_id,c_paymentterm_id,fin_paymentmethod_id,
+            m_pricelist_id,m_warehouse_id,docaction,docstatus,c_doctype_id,dateacct,c_currency_id,paymentrule,invoicerule,deliveryrule,freightcostrule,
+            deliveryviarule,priorityrule,processing,datepromised,billto_id,isdiscountprinted,copyfrom,generatetemplate,copyfrompo,rm_pickfromshipment,
+            rm_receivematerials,rm_createinvoice,rm_addorphanline,calculate_promotions,convertquotation,create_polines,iscashvat,rm_pickfromreceipt,
+	    em_aprm_addpayment)
+    VALUES (Ad_Sequence_Next('c_order', 'A345AEF5BE9B40BEB649E400283127C8'), 
+						'A345AEF5BE9B40BEB649E400283127C8' , 'CA3664AA6C75411184BF95297B23D24A', 
+						'Y', now(), '100',now(),'100',
+						'0A1D4A2DB7144D81A821E31A9B332ACB',v_nodoc,cur.bpid,now(),cur.location,cur.payterm,cur.method,
+						cur.price,'3E4B29BFE65C411F8102FE0C5B2621E7','CO','DR','0',now(),'100','P','I','A','I','P','S','N',now(),
+						cur.location,'N','N','N','N','N','N','N','N','N','N','N','N','N','N');
+
+						v_Message='Record Dengan Nomor Dokumen = ' || cur.docum || ' Berhasil Di Generate' ;
+						
+						
+   END LOOP;
+	select c_order_id into v_order_id from c_order order by created desc limit 1;
+   
+   FOR cur1 IN (
+	select gsp_selling_price_id as header, m_product_id as prod, net_sales as net, c_uom_id as uom, (select COALESCE(MAX(Line),0)+10 FROM C_OrderLine)
+	as line
+	from gsp_sellprice_line
+	
+	where gsp_selling_price_id =v_Record_ID
+	 ) LOOP
+	  
+	    INSERT INTO c_orderline(
+            c_orderline_id, ad_client_id, ad_org_id, isactive, created, createdby, 
+            updated, updatedby, line,m_product_id,priceactual,qtyordered,pricelist,c_tax_id,linenetamt,c_uom_id,c_order_id,dateordered,m_warehouse_id,
+            c_currency_id)
+    VALUES (Ad_Sequence_Next('c_orderline', 'A345AEF5BE9B40BEB649E400283127C8'), 
+						'A345AEF5BE9B40BEB649E400283127C8' , 'CA3664AA6C75411184BF95297B23D24A', 
+						'Y', now(), '100',now(),'100',cur1.line,cur1.prod,cur1.net,1,cur1.net,v_tax
+						,cur1.net*1,cur1.uom,v_order_id,
+						now(),'3E4B29BFE65C411F8102FE0C5B2621E7','100'
+						);
+
+   END LOOP;
+
+
+
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Finished ' || v_Message) ;
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 1, v_Message) ;
+    RETURN;
+  v_ResultStr:= '@ERROR=' || SQLERRM;
+  DBMS_OUTPUT.PUT_LINE(v_ResultStr) ;
+  AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 0, v_ResultStr) ;
+  RETURN;
+END GSQ_GENERATE_BUTTON
+]]></body>
+    </function>
+  </database>

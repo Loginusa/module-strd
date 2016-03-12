@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION SCG_GENERATEMATRIAL">
+    <function name="SCG_GENERATEMATRIAL" type="NULL">
+      <parameter name="pinstance_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[-- Logistice
+  v_ResultStr VARCHAR2(2000):='';
+  v_Message VARCHAR2(2000):='';
+  v_Record_ID VARCHAR2(32);
+  -- Parameter
+  TYPE RECORD IS REF CURSOR;
+    Cur_Parameter RECORD;
+    -- Pegawai untuk diterima
+    Cur_Pegawai RECORD;
+    -- Parameter Variables
+    v_AD_User_ID VARCHAR2(32) ;
+
+    
+    v_kategori_id VARCHAR(1000);
+    v_prefik_pkategori VARCHAR(1000);
+
+
+    v_group_material VARCHAR(1000);--OBTG:VARCHAR2--
+    v_nama_bahan_baku VARCHAR(1000);--OBTG:VARCHAR2--
+    v_jenis_bahan_baku VARCHAR(1000);--OBTG:VARCHAR2--
+    v_type_material VARCHAR(1000);--OBTG:VARCHAR2--
+    v_ukuran_produk VARCHAR(1000);
+    v_grup VARCHAR(1000);  
+    v_grup_n VARCHAR(1000);  
+    v_jenis_n VARCHAR(1000);
+    v_nama_n VARCHAR(1000); -- Nama Bahan Baku
+    v_nama_v VARCHAR(1000); --Kode Bahan Baku
+    v_ukuran_produk_n VARCHAR(1000);
+    v_jenis_v VARCHAR(1000);
+--    v_LineNo NUMERIC(10) ;
+    END_PROCESS BOOLEAN:=false;
+  BEGIN
+    --  Update AD_PInstance
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Processing ' || PInstance_ID) ;
+    v_ResultStr:='PInstanceNotFound';
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'Y', NULL, NULL) ;
+  BEGIN --BODY
+    -- Get Parameters
+    v_ResultStr:='ReadingParameters';
+    FOR Cur_Parameter IN
+      (SELECT i.Record_ID,
+        p.ParameterName,
+        p.P_String,
+        p.P_Number,
+        p.P_Date,
+        i.CreatedBy AS AD_User_ID
+      FROM AD_PInstance i
+      LEFT JOIN AD_PInstance_Para p
+        ON i.AD_PInstance_ID=p.AD_PInstance_ID
+      WHERE i.AD_PInstance_ID=PInstance_ID
+      ORDER BY p.SeqNo
+      )
+    LOOP
+    
+      IF(Cur_Parameter.ParameterName='group_material') THEN
+        v_group_material:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('group_material=' || v_group_material) ;
+        
+     ELSIF(Cur_Parameter.ParameterName='nama_bahan_baku') THEN
+        v_nama_bahan_baku:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('nama_bahan_baku=' || v_nama_bahan_baku) ;
+         
+     ELSIF(Cur_Parameter.ParameterName='jenis_bahan_baku') THEN
+        v_jenis_bahan_baku:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('jenis_bahan_baku=' || v_jenis_bahan_baku) ;
+    
+     ELSIF(Cur_Parameter.ParameterName='ukuran_produk') THEN
+        v_ukuran_produk:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('ukuran_produk=' || v_ukuran_produk) ; 
+
+     ELSIF(Cur_Parameter.ParameterName='type_material') THEN
+        v_type_material:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('type_material=' || v_type_material); 
+
+     ELSE
+        DBMS_OUTPUT.PUT_LINE('*** Unknown Parameter=' || Cur_Parameter.ParameterName);
+     END IF;
+
+       END LOOP; -- Get Parameter
+    DBMS_OUTPUT.PUT_LINE('  Record_ID=' || v_Record_ID) ;
+
+	select value into v_grup from scg_group_material where scg_group_material_id = v_group_material ;
+
+	select name into v_grup_n from scg_group_material where scg_group_material_id =v_group_material ;
+	select name into v_jenis_n from scg_jenis_bahan_baku where scg_jenis_bahan_baku_id = v_jenis_bahan_baku;
+        select value into v_jenis_v from scg_jenis_bahan_baku where scg_jenis_bahan_baku_id = v_jenis_bahan_baku;
+	
+	select name into v_nama_n from scg_nama_bahan_baku where scg_nama_bahan_baku_id = v_nama_bahan_baku ;
+	select value into v_nama_v from scg_nama_bahan_baku where scg_nama_bahan_baku_id = v_nama_bahan_baku ;
+	select name into v_ukuran_produk_n from scg_ukuranmaterial where value = v_ukuran_produk;
+
+      v_Record_ID:=Cur_Parameter.Record_ID;
+      v_AD_User_ID:=Cur_Parameter.AD_User_ID;
+
+      SELECT M_PRODUCT_CATEGORY_ID INTO v_kategori_id FROM M_PRODUCT WHERE M_PRODUCT_ID = v_Record_ID;
+      SELECT VALUE INTO v_prefik_pkategori FROM M_PRODUCT_CATEGORY WHERE M_PRODUCT_CATEGORY_ID = v_kategori_id;
+      
+      UPDATE m_product SET em_gsp_materialtype=v_type_material,value = coalesce(v_prefik_pkategori,'')|| '-' || coalesce(v_grup,'') || coalesce(v_nama_v,'') 
+	||coalesce(v_jenis_v,'') 
+	|| coalesce(v_ukuran_produk,''),Description=coalesce(v_grup_n,'') ,name = coalesce(v_nama_n,'')  ||' ' ||coalesce( v_jenis_n ,'') ||' ' ||coalesce(v_ukuran_produk_n,'') 
+      WHERE m_product_id=v_Record_ID; 
+      
+
+
+   
+    --<<END_PROCESS>> 
+    --  Update AD_PInstance
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Finished ' || v_Message) ;
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 1, v_Message) ;
+    RETURN;
+  END; --BODY
+EXCEPTION
+WHEN OTHERS THEN
+
+  v_ResultStr:= '@ERROR=' || SQLERRM;
+  DBMS_OUTPUT.PUT_LINE(v_ResultStr) ;
+  AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 0, v_ResultStr) ;
+  RETURN;
+END SCG_GENERATEMATRIAL
+]]></body>
+    </function>
+  </database>

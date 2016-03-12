@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION SCG_GENERATE_PROCEDURE">
+    <function name="SCG_GENERATE_PROCEDURE" type="NULL">
+      <parameter name="pinstance_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[/*************************************************************************
+* Tias ade putra - PT.Global Anugerah Indonesia
+************************************************************************/
+  -- Logistice
+  v_ResultStr VARCHAR2(2000):='';
+  v_Message VARCHAR2(2000):='';
+  v_Record_ID VARCHAR2(32);
+  -- Parameter
+  TYPE RECORD IS REF CURSOR;
+    Cur_Parameter RECORD;
+    -- Pegawai untuk diterima
+    Cur_Pegawai RECORD;
+    -- Parameter Variables
+    v_AD_User_ID VARCHAR2(32) ;
+    v_merek VARCHAR(32);--OBTG:VARCHAR2--
+    v_group_kabel1 VARCHAR(32);--OBTG:VARCHAR2--
+    v_jenis_kabel1 VARCHAR(32);--OBTG:VARCHAR2--
+    v_pengenal_rendah VARCHAR(32);
+    v_ukuran_produk VARCHAR(32);
+    v_standart VARCHAR(32);
+    v_grup VARCHAR(32);
+    v_jenis VARCHAR(32);
+
+    v_kategori_id VARCHAR(32);
+    v_prefik_pkategori VARCHAR(32);
+
+    v_merek_nama VARCHAR(1000);--OBTG:VARCHAR2--
+    v_merek_description VARCHAR(1000);--OBTG:VARCHAR2--
+    v_group_n VARCHAR(1000);--OBTG:VARCHAR2--
+    v_jenis_n VARCHAR(1000);--OBTG:VARCHAR2--
+    v_pengenal_n VARCHAR(1000);--OBTG:VARCHAR2--
+    v_ukuran_produk_n VARCHAR(32);--OBTG:VARCHAR2--
+    v_ukuran_produk_n1 VARCHAR(32);--OBTG:VARCHAR2--
+    v_standart_n VARCHAR(1000);--OBTG:VARCHAR2--
+    v_spasi VARCHAR(1000);
+    v_warna VARCHAR(1000);
+    v_spasi_w VARCHAR(1000);
+--    v_LineNo NUMERIC(10) ;
+    END_PROCESS BOOLEAN:=false;
+  BEGIN
+    --  Update AD_PInstance
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Processing ' || PInstance_ID) ;
+    v_ResultStr:='PInstanceNotFound';
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'Y', NULL, NULL) ;
+  BEGIN --BODY
+    -- Get Parameters
+    v_ResultStr:='ReadingParameters';
+    FOR Cur_Parameter IN
+      (SELECT i.Record_ID,
+        p.ParameterName,
+        p.P_String,
+        p.P_Number,
+        p.P_Date,
+        i.CreatedBy AS AD_User_ID
+      FROM AD_PInstance i
+      LEFT JOIN AD_PInstance_Para p
+        ON i.AD_PInstance_ID=p.AD_PInstance_ID
+      WHERE i.AD_PInstance_ID=PInstance_ID
+      ORDER BY p.SeqNo
+      )
+    LOOP
+
+      v_Record_ID:=Cur_Parameter.Record_ID;
+      v_AD_User_ID:=Cur_Parameter.AD_User_ID;
+    
+      IF(Cur_Parameter.ParameterName='merek') THEN
+        v_merek:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('merek=' || v_merek) ;
+        
+     ELSIF(Cur_Parameter.ParameterName='group_kabel1') THEN
+        v_group_kabel1:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('group_kabel1=' || v_group_kabel1) ;
+         
+     ELSIF(Cur_Parameter.ParameterName='jenis_kabel1') THEN
+        v_jenis_kabel1:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('jenis_kabel1=' || v_jenis_kabel1) ;
+    
+      ELSIF(Cur_Parameter.ParameterName='pengenal_rendah') THEN
+        v_pengenal_rendah:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('pengenal_rendah=' || v_pengenal_rendah) ;
+        
+     ELSIF(Cur_Parameter.ParameterName='ukuran_produk') THEN
+        v_ukuran_produk:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('ukuran_produk=' || v_ukuran_produk);  
+
+     ELSIF(Cur_Parameter.ParameterName='standart') THEN
+        v_standart:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('standart=' || v_standart);  
+
+      ELSE
+        DBMS_OUTPUT.PUT_LINE('*** Unknown Parameter=' || Cur_Parameter.ParameterName) ;
+      END IF;
+
+	select value into v_jenis from scg_jenis_produk where scg_jenis_produk_id = v_jenis_kabel1 ;
+	select value into v_grup from scg_mgroupkabel where scg_mgroupkabel_id = v_group_kabel1 ;
+
+	select name into v_jenis_n from scg_jenis_produk where scg_jenis_produk_id = v_jenis_kabel1 ;
+	select name into v_group_n from scg_mgroupkabel where scg_mgroupkabel_id = v_group_kabel1 ;
+	select name into v_merek_nama from m_brand where m_brand_id = v_merek ;
+	select description into v_merek_description from m_brand where m_brand_id = v_merek ;
+	select name into v_pengenal_n from scg_tegangan_pengenal where value = v_pengenal_rendah ;
+	select name into v_ukuran_produk_n from scg_size where code_product = v_ukuran_produk ;
+	select scg_size_id into v_ukuran_produk_n1 from scg_size where code_product = v_ukuran_produk ;
+	select name into v_standart_n from scg_standart where value = v_standart ;
+        select w.nama into v_warna from scg_size s,scg_warna w where s.scg_warna_id = w.scg_warna_id and s.code_product = v_ukuran_produk;
+
+
+        END LOOP; -- Get Parameter
+    DBMS_OUTPUT.PUT_LINE('  Record_ID=' || v_Record_ID) ;
+    
+
+
+
+      SELECT M_PRODUCT_CATEGORY_ID INTO v_kategori_id FROM M_PRODUCT WHERE M_PRODUCT_ID = v_Record_ID;
+      SELECT VALUE INTO v_prefik_pkategori FROM M_PRODUCT_CATEGORY WHERE M_PRODUCT_CATEGORY_ID = v_kategori_id;
+
+
+      IF(v_pengenal_n='0') THEN 
+      v_pengenal_n='';
+      v_spasi ='';
+      ELSE
+      v_pengenal_n=v_pengenal_n;
+      v_spasi =' ';
+      END IF;
+
+      IF(v_warna=NULL) THEN 
+  
+      v_spasi_w ='';
+      ELSE
+      v_warna=v_warna;
+      v_spasi_w =' ';
+      END IF;
+
+      
+      UPDATE m_product SET value = v_prefik_pkategori|| '-' || v_merek_nama || v_grup 
+	||coalesce(v_jenis,'') 
+	|| coalesce(v_pengenal_rendah,'') || v_standart || coalesce(v_ukuran_produk,''),Description=coalesce(v_jenis_n,''),
+
+	name = v_jenis_n || ' ' || v_ukuran_produk_n || ' ' || v_pengenal_n || v_spasi || COALESCE('','') || v_spasi_w || v_merek_description || ' ' || v_standart_n,
+	m_brand_id = v_merek, em_scg_jenis_produk_id = v_jenis_kabel1, em_scg_size_id = v_ukuran_produk_n1
+
+      WHERE m_product_id=v_Record_ID; 
+
+      
+
+
+   
+    --<<END_PROCESS>>
+    --  Update AD_PInstance
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Finished ' || v_Message) ;
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 1, v_Message) ;
+    RETURN;
+  END; --BODY
+EXCEPTION
+WHEN OTHERS THEN
+
+  v_ResultStr:= '@ERROR=' || SQLERRM;
+  DBMS_OUTPUT.PUT_LINE(v_ResultStr) ;
+  AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 0, v_ResultStr) ;
+  RETURN;
+END SCG_GENERATE_PROCEDURE
+]]></body>
+    </function>
+  </database>

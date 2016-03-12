@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ *************************************************************************
+GAI - Tias Ade Putra
+ ************************************************************************
+-->
+
+<SqlClass name="ScgGetUomBomData" package="com.gai.sizeCodeGenerate.erpCommon.ad_callouts">
+   <SqlClassComment></SqlClassComment>
+   <SqlMethod name="select" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+       		
+			Select uom.name as unit, mp.value as searchkey from m_product mp,c_uom uom where mp.c_uom_id = uom.c_uom_id and m_product_id = ?
+      </Sql>
+      <Parameter name="inpmProductbomId"/>
+   </SqlMethod>
+  
+</SqlClass>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ *************************************************************************
+GAI - Sodikin
+ ************************************************************************
+-->
+
+<SqlClass name="GmbGetNamaProdukData" package="com.gai.master.bom.erpCommon.ad_callouts">
+   <SqlClassComment></SqlClassComment>
+   
+      <SqlMethod name="selectdual" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+       	  select '' AS nama from dual
+      </Sql>
+   </SqlMethod>
+   
+   <SqlMethod name="select" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+       	 	  select mp.name AS nama from m_product mp where mp.m_product_id = ?
+      </Sql>
+      <Parameter name="inpgmbBomId"/>
+   </SqlMethod>
+   
+</SqlClass>

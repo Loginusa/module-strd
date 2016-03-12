@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="SalesQuotation" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.100000000000002"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="DOCUMENT_ID" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select c.documentno as doc, c.dateordered as date, cb.name as vendor, cast( co.qtyordered as Integer) as qty, cu.name as uom, mp.name as product , cast(co.priceactual as integer) as harga,
+cast(co.qtyordered*co.priceactual as Integer) as total, co.description as description,cb1.name as salesrep, c.datepromised as tglantar,cast(sum(cot.taxamt) as Integer) as totaltax,
+cast(b.pricelist as Integer) as harga2,cast(co.qtyordered*b.pricelist as Integer ) as totalrupiah, cbl.name as alamat, au.name as attn, au.phone as telp, au.fax as fax,
+au.email,au1.name as CP, au1.phone as telp2, au1.title as fax2,au1.email as email2, mb.description as brand , c.grandtotal as grandtotal, c.c_order_id,
+c.description as descrip,ccu.iso_code as matauang,(case c.docstatus
+	when 'CO' then 'Completed'
+	when 'VO' then 'Void'
+	when 'DR' then 'Draft'end)as docstat
+
+from c_order c
+
+left join c_bpartner cb on cb.c_bpartner_id = c.c_bpartner_id
+left join c_bpartner cb1 on cb1.c_bpartner_id = cb.salesrep_id
+left join c_bpartner_location cbl on cbl.c_bpartner_id = cb.c_bpartner_id
+left join c_bpartner_location cbl1 on cbl1.c_bpartner_id = cb1.c_bpartner_id
+left join ad_user au on cb.c_bpartner_id = au.c_bpartner_id
+left join ad_user au1 on cb.salesrep_id = au1.c_bpartner_id
+left join c_orderline co on co.c_order_id = c.c_order_id
+left join c_uom cu on cu.c_uom_id = co.c_uom_id
+left join m_product mp on mp.m_product_id= co.m_product_id
+left join m_brand mb on mp.m_brand_id = mb.m_brand_id
+left join c_doctype cd on cd.c_doctype_id = c.c_doctypetarget_id
+left join c_ordertax cot on cot.c_order_id = c.c_order_id
+left join m_productprice b on (mp.m_product_id = b.m_product_id)
+LEFT JOIN AD_USER ON c.AD_USER_ID = AD_USER.AD_USER_ID
+left join C_POC_DOCTYPE_TEMPLATE ON C_POC_DOCTYPE_TEMPLATE.C_DOCTYPE_ID = c.C_DOCTYPE_ID
+left join ad_client ON ad_client.ad_client_id = c.ad_client_id
+left join c_currency ccu on ccu.c_currency_id = c.c_currency_id
+
+
+where c.issotrx = 'Y' and cd.docsubtypeso ='OB' and c.c_order_id IN ($P{DOCUMENT_ID})
+group by c.documentno, c.dateordered,cb.name,co.qtyordered,cu.name,mp.name,co.priceactual,co.description,cb1.name,c.datepromised,b.pricelist,cbl.name,
+au.name,au.phone,au.fax,au.email,au1.name,cbl1.phone,cbl1.fax,au1.email,mb.description,c.grandtotal,c.c_order_id,c.description,ccu.iso_code,au1.phone,au1.title]]>
+	</queryString>
+	<field name="doc" class="java.lang.String"/>
+	<field name="date" class="java.sql.Timestamp"/>
+	<field name="vendor" class="java.lang.String"/>
+	<field name="qty" class="java.lang.Integer"/>
+	<field name="uom" class="java.lang.String"/>
+	<field name="product" class="java.lang.String"/>
+	<field name="harga" class="java.lang.Integer"/>
+	<field name="total" class="java.lang.Integer"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="salesrep" class="java.lang.String"/>
+	<field name="tglantar" class="java.sql.Timestamp"/>
+	<field name="totaltax" class="java.lang.Integer"/>
+	<field name="harga2" class="java.lang.Integer"/>
+	<field name="totalrupiah" class="java.lang.Integer"/>
+	<field name="alamat" class="java.lang.String"/>
+	<field name="attn" class="java.lang.String"/>
+	<field name="telp" class="java.lang.String"/>
+	<field name="fax" class="java.lang.String"/>
+	<field name="email" class="java.lang.String"/>
+	<field name="cp" class="java.lang.String"/>
+	<field name="telp2" class="java.lang.String"/>
+	<field name="fax2" class="java.lang.String"/>
+	<field name="email2" class="java.lang.String"/>
+	<field name="brand" class="java.lang.String"/>
+	<field name="grandtotal" class="java.math.BigDecimal"/>
+	<field name="c_order_id" class="java.lang.String"/>
+	<field name="descrip" class="java.lang.String"/>
+	<field name="matauang" class="java.lang.String"/>
+	<field name="docstat" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="100">
+			<staticText>
+				<reportElement x="0" y="0" width="554" height="26"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="22" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PT. SUTRAKABEL INTIMANDIRI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="75"/>
+				<box>
+					<topPen lineWidth="1.25" lineStyle="Solid"/>
+					<leftPen lineWidth="1.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.25" lineStyle="Solid"/>
+					<rightPen lineWidth="1.25" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<image>
+				<reportElement x="6" y="5" width="89" height="65"/>
+				<imageExpression class="java.lang.String"><![CDATA["/com/gai/sutrado/sales/erpCommon/ad_reports/LogoSutradoNew.jpg"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="0" y="84" width="555" height="6"/>
+				<box>
+					<topPen lineWidth="2.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<image>
+				<reportElement x="475" y="5" width="80" height="70"/>
+				<imageExpression class="java.lang.String"><![CDATA["/com/gai/sutrado/sales/erpCommon/ad_reports/logo_ISO_sutrado.jpg"]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="0" y="26" width="554" height="58"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Raya Bogor Km. 49, JL.Roda Pembangunan No. 5"+"\n"+
+"Desa Cimandala Kecamatan Sukaraja Kabupaten Bogor 16710"+"\n"+
+"Telp.:(021)8753735,8757047,8757048,8757049,Fax.:(021)8753736"+"\n"+
+"Website : www.sutrakabel.com Email : info@sutrakabel."]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<summary>
+		<band height="248" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="158" width="555" height="89"/>
+				<box>
+					<topPen lineWidth="0.75" lineStyle="Solid"/>
+					<leftPen lineWidth="0.75" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.75" lineStyle="Solid"/>
+					<rightPen lineWidth="0.75" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="277" height="154"/>
+				<box>
+					<topPen lineWidth="0.75" lineStyle="Solid"/>
+					<leftPen lineWidth="0.75" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.75" lineStyle="Solid"/>
+					<rightPen lineWidth="0.75" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="102" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tel. / Fax.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="12" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[To]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="80" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Attn]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="124" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Email]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="74" y="12" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="74" y="80" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="74" y="102" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="74" y="124" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="74" y="193" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="215" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="193" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="171" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Subject]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="74" y="215" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="74" y="171" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="277" y="0" width="278" height="154"/>
+				<box>
+					<topPen lineWidth="0.75" lineStyle="Solid"/>
+					<leftPen lineWidth="0.75" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.75" lineStyle="Solid"/>
+					<rightPen lineWidth="0.75" lineStyle="Solid"/>
+				</box>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="344" y="102" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="290" y="124" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Email]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="290" y="80" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[C.P]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="290" y="102" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tel. / Fax.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="344" y="12" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="290" y="12" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[From]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="344" y="124" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="344" y="80" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="84" y="171" width="79" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Quotation]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="354" y="12" width="182" height="21"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PT. Sutrakabel intimmandiri"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="354" y="33" width="182" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["www.sutrakabel.com"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="84" y="193" width="260" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{doc}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="84" y="215" width="260" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[new SimpleDateFormat("dd MMMMM yyyy",new java.util.Locale("id")).format($F{date})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement x="354" y="102" width="182" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{telp2}== null ? "-" : $F{telp2})+" / "+($F{fax2}== null ? "-" : $F{fax2})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="354" y="124" width="182" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{email2}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="84" y="12" width="183" height="57"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{vendor}+"\n"+
+$F{alamat}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="84" y="80" width="183" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{attn}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="84" y="102" width="183" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{telp}== null ? "-" :$F{telp}) +" / "+($F{fax}== null ? "-" : $F{fax})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="84" y="124" width="183" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{email}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="355" y="80" width="181" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{salesrep}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="344" y="171" width="54" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Status]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="409" y="171" width="100" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{docstat}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="398" y="171" width="11" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

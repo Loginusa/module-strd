@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ *************************************************************************
+GAI - Sodikin
+ ************************************************************************
+-->
+
+<SqlClass name="ScgGetKodeData" package="com.gai.sizeCodeGenerate.erpCommon.ad_callouts">
+   <SqlClassComment></SqlClassComment>
+   <SqlMethod name="select" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+       		Select kode,'' AS nama from scg_satuan where scg_satuan_id = ?
+      </Sql>
+      <Parameter name="inpscgSatuanId"/>
+   </SqlMethod>
+   
+    <SqlMethod name="selectKonduktor" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+       		Select kode from scg_konduktor where scg_konduktor_id = ?
+      </Sql>
+      <Parameter name="inpscgKonduktorId"/>
+   </SqlMethod>
+   
+   <SqlMethod name="selectWarna" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+       		select nama from scg_warna where scg_warna_id = ?
+      </Sql>
+      <Parameter name="inpscgWarnaId"/>
+   </SqlMethod>
+   
+</SqlClass>

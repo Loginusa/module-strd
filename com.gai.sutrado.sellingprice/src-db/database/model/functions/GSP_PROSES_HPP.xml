@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION GSP_PROSES_HPP">
+    <function name="GSP_PROSES_HPP" type="NULL">
+      <parameter name="pinstance_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[-- Logistice
+  v_ResultStr VARCHAR2(2000):='';
+  v_Message VARCHAR2(2000):='';
+  v_Record_ID VARCHAR2(32);
+  -- Parameter
+  TYPE RECORD IS REF CURSOR;
+    Cur_Parameter RECORD;
+    Cur_SellingPrice RECORD;
+
+    v_AD_User_ID VARCHAR2(32) ;
+   
+    v_M_Pricelist_ID VARCHAR2(32) ;
+    v_Currency VARCHAR2(32) ;
+    v_pricelistversion VARCHAR2(32) ;
+    v_Productprice_ID VARCHAR2(32) ;
+    v_Action VARCHAR(1000);
+
+
+
+    END_PROCESS BOOLEAN:=false;
+  BEGIN
+    --  Update AD_PInstance
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Processing ' || PInstance_ID) ;
+    v_ResultStr:='PInstanceNotFound';
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'Y', NULL, NULL) ;
+  BEGIN --BODY
+    -- Get Parameters
+    v_ResultStr:='ReadingParameters';
+    FOR Cur_Parameter IN
+      (SELECT i.Record_ID,
+        p.ParameterName,
+        p.P_String,
+        p.P_Number,
+        p.P_Date,
+        i.CreatedBy AS AD_User_ID
+      FROM AD_PInstance i
+      LEFT JOIN AD_PInstance_Para p
+        ON i.AD_PInstance_ID=p.AD_PInstance_ID
+      WHERE i.AD_PInstance_ID=PInstance_ID
+      ORDER BY p.SeqNo
+      )
+    LOOP
+      v_Record_ID:=Cur_Parameter.Record_ID;
+      v_AD_User_ID:=Cur_Parameter.AD_User_ID;
+    
+  IF(Cur_Parameter.ParameterName='action_p') THEN
+        v_Action:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('action_p=' || v_Action);
+  ELSIF(Cur_Parameter.ParameterName='M_Pricelist_ID') THEN
+        v_M_Pricelist_ID:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('  M_Pricelist_ID=' || v_M_Pricelist_ID) ;
+  ELSIF(Cur_Parameter.ParameterName='pricelistversion_p') THEN
+        v_pricelistversion:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('  pricelistversion_p=' || v_pricelistversion) ;
+      ELSE
+        DBMS_OUTPUT.PUT_LINE('*** Unknown Parameter=' || Cur_Parameter.ParameterName) ;
+      END IF;
+      
+    END LOOP; -- Get Parameter
+    DBMS_OUTPUT.PUT_LINE('  Record_ID=' || v_Record_ID) ;
+
+   SELECT C_CURRENCY_ID INTO v_Currency FROM M_Pricelist WHERE M_Pricelist_ID = v_M_Pricelist_ID;
+
+    FOR Cur_SellingPrice IN
+      (SELECT gsp.* FROM gsp_sellprice_line gsp
+            WHERE gsp_selling_price_id = v_Record_ID
+      )
+    LOOP
+       
+        Ad_Sequence_Next('M_ProductPrice', Cur_SellingPrice.AD_Client_ID, v_Productprice_ID);
+
+        INSERT
+        INTO m_productprice
+          (m_productprice_id,m_pricelist_version_id,m_product_id,ad_client_id,ad_org_id,isactive,
+           created,createdby,updated,updatedby,pricelist,pricestd,pricelimit,cost,algorithm,
+           em_gsp_selling_price_id
+            )
+         VALUES(v_Productprice_ID,v_pricelistversion,Cur_SellingPrice.m_product_id,
+         Cur_SellingPrice.ad_client_id,'0','Y',now(),
+         v_AD_User_ID,now(),v_AD_User_ID,
+         C_CURRENCY_CONVERT(Cur_SellingPrice.unit_price,'303',v_Currency,TO_DATE(COALESCE(now(), now())), NULL,Cur_SellingPrice.ad_client_id,Cur_SellingPrice.ad_org_id),
+         C_CURRENCY_CONVERT(Cur_SellingPrice.unit_price,'303',v_Currency,TO_DATE(COALESCE(now(), now())), NULL,Cur_SellingPrice.ad_client_id,Cur_SellingPrice.ad_org_id),
+         C_CURRENCY_CONVERT(Cur_SellingPrice.unit_price,'303',v_Currency,TO_DATE(COALESCE(now(), now())), NULL,Cur_SellingPrice.ad_client_id,Cur_SellingPrice.ad_org_id),
+         0,'S',Cur_SellingPrice.gsp_selling_price_id);   
+
+    END LOOP;
+
+         UPDATE gsp_selling_price SET statusdoc =v_Action ,btn_proses='Y' WHERE gsp_selling_price_id = v_Record_ID;
+
+   
+    --<<END_PROCESS>>
+    --  Update AD_PInstance
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Finished ' || v_Message) ;
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 1, v_Message) ;
+    RETURN;
+  END; --BODY
+EXCEPTION
+WHEN OTHERS THEN
+
+  v_ResultStr:= '@ERROR=' || SQLERRM;
+  DBMS_OUTPUT.PUT_LINE(v_ResultStr) ;
+  AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 0, v_ResultStr) ;
+  RETURN;
+END GSP_PROSES_HPP
+]]></body>
+    </function>
+  </database>

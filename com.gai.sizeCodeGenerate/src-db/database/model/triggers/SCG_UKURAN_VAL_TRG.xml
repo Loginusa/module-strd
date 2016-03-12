@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER SCG_UKURAN_VAL_TRG">
+    <trigger name="SCG_UKURAN_VAL_TRG" table="SCG_SIZE" fires="before" insert="true" update="true" delete="false" foreach="row">
+      <body><![CDATA[
+ v_Value VARCHAR(32);
+ 
+ v_message VARCHAR(100);
+ TYPE RECORD IS REF CURSOR;
+  Cur_Value RECORD;
+  
+        
+BEGIN
+    
+    IF AD_isTriggerEnabled()='N' THEN RETURN;
+    END IF;
+ 
+
+IF (INSERTING OR UPDATING) THEN    
+
+
+
+	FOR Cur_Value IN 
+
+	 SELECT *
+	 FROM scg_size WHERE scg_size_ID <> :NEW.scg_size_ID
+	 LOOP 	 
+		IF (:NEW.NAME=Cur_Value.NAME AND :NEW.scg_jenis_produk_id=Cur_Value.scg_jenis_produk_id) THEN
+		RAISE_APPLICATION_ERROR(-20000,'@SCG_KodeNamaError@');
+		END IF;
+
+     END LOOP;
+
+  
+     
+END IF;
+
+
+  
+
+
+END SCG_UKURAN_VAL_TRG
+]]></body>
+    </trigger>
+  </database>

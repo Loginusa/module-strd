@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ *************************************************************************
+ * The contents of this file are subject to the Openbravo  Public  License
+
+
+ * Version  1.1  (the  "License"),  being   the  Mozilla   Public  License
+ * Version 1.1  with a permitted attribution clause; you may not  use this
+ * file except in compliance with the License. You  may  obtain  a copy of
+ * the License at http://www.openbravo.com/legal/license.html 
+ * Software distributed under the License  is  distributed  on  an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ * License for the specific  language  governing  rights  and  limitations
+ * under the License. 
+ * The Original Code is Openbravo ERP. 
+ * The Initial Developer of the Original Code is Openbravo SLU 
+ * All portions are Copyright (C) 2001-2011 Openbravo SLU 
+ * All Rights Reserved. 
+ * Contributor(s):  ______________________________________.
+ ************************************************************************
+-->
+<SqlClass name="GspPrintData" package="com.gai.sutrado.sellingprice.erpCommon.ad_reports">
+  <SqlClassComment></SqlClassComment>
+  <SqlMethod name="select" type="preparedStatement" return="multiple">
+    <SqlMethodComment></SqlMethodComment>
+    <Sql>
+    <![CDATA[
+ SELECT 
+      gsp.gsp_selling_price_id as gsp_selling_price_id,
+      cast(coalesce(count(print_history.group_print)+1,0) as character) as printto,TO_CHAR(now(),'YYYY / MM / dd') as printed,
+  ROUND((((gsp.t_salesprice_v / gsp.net_sales_v) * 100)),2) AS t_salesprice_p,
+  gsp.t_salesprice_v AS t_salesprice_v,
+  ROUND((((gsp.material_price_v / gsp.net_sales_v) * 100)),2) AS material_price_p,
+  gsp.material_price_v AS material_price_v,
+  ROUND((((gsp.avalan_v / gsp.net_sales_v) * 100)),2) AS avalan_p,
+  gsp.avalan_v AS avalan_v,
+  ROUND((((gsp.packing_v / gsp.net_sales_v) * 100)),2) AS packing,
+  gsp.packing_v AS packing_v,
+  ROUND((((gsp.fix_cost_v / gsp.net_sales_v) * 100)),2) AS fix_cost_p,
+  gsp.fix_cost_v AS fix_cost_v,
+  ROUND((((gsp.variable_v / gsp.net_sales_v) * 100)),3) AS variable_p,
+  gsp.variable_v AS variable_v,
+  ROUND((((gsp.waste_v / gsp.net_sales_v) * 100)),2) AS waste_p,
+  gsp.waste_v AS waste_v,
+  ROUND((((gsp.cof_v / gsp.net_sales_v) * 100)),2) AS cof_p,
+  gsp.cof_v AS cof_v,
+  ROUND((((gsp.handling_v / gsp.net_sales_v) * 100)),2) AS handling_p,
+  gsp.handling_v AS handling_v,
+  ROUND((((gsp.profit_v / gsp.net_sales_v) * 100)),2) AS profit_p,
+  gsp.profit_v AS profit_v,
+  ROUND((((gsp.net_sales_v / gsp.net_sales_v) * 100)),2) AS net_sales,
+  gsp.freight AS freight,
+  gsp.freight_v AS freight_v,
+  gsp.insurance,
+  gsp.insurance_v AS insurance_v,
+  gsp.total_freight,
+  gsp.total_freight_v AS total_freight_v,
+  ROUND((((gsp.t_sellprice_v / gsp.net_sales_v) * 100)),2) AS t_selprice_p,
+  gsp.t_sellprice_v AS t_sellprice_v,
+  gsp.net_sales_v AS net_sales_v,
+  gsp.lme_a2c,
+  gsp.premium_a2c,
+  gsp.lme_a3c,
+  gsp.premium_a3c,
+  gsp.lme_copper,
+  gsp.premium_copper,
+  gsp.kurs,
+  '' as material_price,
+  '' as product,
+  '' as variabel_cost,
+  '' as waste_cost_p ,
+  '' as waste_cost_v ,
+  '' as freight_p,
+  '' as insurance_p,
+  '' as selling_price,
+  '' as last_rev,
+ gsp.documentno,gsp.name,TO_CHAR(gsp.tanggal) as tanggal, gsp.delivery, gsp.validity,TO_CHAR(gsp.tanggal_tutup) as tanggal_tutup,price_type, cpt.name as payment_term,
+        cb.name as rev, au.name as sales, cur.iso_code as currency,mp.name as bom , 
+        SUM(c.bomqty) as qty, 
+        SUM(COALESCE(C_CURRENCY_CONVERT(b.pricestd,gsp_getcurrency_version(gsp.tanggal,c.m_productbom_id),TO_CHAR(?),TO_DATE(COALESCE(gsp.tanggal, NOW())), NULL,gsp.ad_client_id, gsp.ad_org_id),0)) as unit_price, 
+        (SUM(c.bomqty) * SUM(COALESCE(C_CURRENCY_CONVERT((b.pricestd),gsp_getcurrency_version(gsp.tanggal,c.m_productbom_id),TO_CHAR(?),TO_DATE(COALESCE(gsp.tanggal, NOW())), NULL,gsp.ad_client_id, gsp.ad_org_id),0))) as total, 
+       mb.description as brand, c.em_scg_uom as uom, mp.value as material
+       FROM  m_product a
+   left join m_product_bom c on (a.m_product_id = c.m_product_id)
+   left join m_product mp on (mp.m_product_id = c.m_productbom_id)
+   left join m_productprice b on (c.m_productbom_id = b.m_product_id)
+   left join m_brand mb on (mb.m_brand_id = a.m_brand_id)
+   left join c_uom cu on (cu.c_uom_id = mp.c_uom_id)
+   left join gsp_sellprice_line gsl on (a.m_product_id= gsl.m_product_id)
+   left join  gsp_selling_price gsp on (gsp.gsp_selling_price_id = gsl.gsp_selling_price_id)
+   left join print_history on (code_print = gsp.gsp_selling_price_id and group_print = 'Selling Price')
+   left join c_paymentterm cpt on (cpt.c_paymentterm_id = gsp.c_paymentterm_id)
+   left join c_currency cur on (cur.c_currency_id = gsp.c_currency_id)
+   left join c_bpartner cb on (cb.c_bpartner_id = gsp.c_bpartner_id)
+   left join ad_user au on (au.ad_user_id = gsp.salesrep_id)
+   left join m_pricelist_version ver on (b.m_pricelist_version_id = ver.m_pricelist_version_id)
+      WHERE 1=1 AND gsp.GSP_Selling_PRICE_ID IN ('1')
+      AND  ver.m_pricelist_version_id  = gsp_getpricelist_version(gsp.tanggal,c.m_productbom_id)
+      GROUP BY gsp.t_salesprice_p , mp.value,
+  gsp.t_salesprice_v,
+  gsp.material_price_p ,
+  gsp.material_price_v ,
+  gsp.avalan_p ,
+  gsp.avalan_v ,
+  gsp.packing ,
+  gsp.packing_v ,
+  gsp.fix_cost_p ,
+  gsp.fix_cost_v ,
+  gsp.variable_p ,
+  gsp.variable_v ,
+  gsp.waste_p ,
+  gsp.waste_v ,
+  gsp.cof_p ,
+  gsp.cof_v ,
+  gsp.handling_p ,
+  gsp.handling_v ,
+  gsp.profit_p ,
+  gsp.profit_v ,
+  gsp.net_sales ,
+  gsp.freight ,
+  gsp.freight_v ,
+  gsp.insurance ,
+  gsp.insurance_v ,
+  gsp.total_freight ,
+  gsp.total_freight_v ,
+  gsp.t_selprice_p ,
+  gsp.t_sellprice_v ,
+  gsp.net_sales_v ,
+  price_type,
+  gsp.documentno,gsp.name,gsp.tanggal, 
+  gsp.delivery, gsp.validity, cpt.name,cur.iso_code,cb.name, au.name,gsp.gsp_selling_price_id,
+        gsp.tanggal_tutup,
+        mp.name,
+        mb.m_brand_id ,
+        c.em_scg_uom,
+        gsp.ad_client_id, gsp.ad_org_id,b.pricestd
+        ORDER BY mp.name asc
+
+      ]]></Sql>
+    <Parameter name="gspSellingPriceId" type="replace" optional="true" after="AND gsp.GSP_Selling_PRICE_ID IN (" text="'1'"/>
+    <Parameter name="gspSellingCurrency"/>
+    <Parameter name="gspSellingCurrency"/>
+  </SqlMethod>
+
+  <SqlMethod name="selectline" type="preparedStatement" return="multiple">
+    <SqlMethodComment></SqlMethodComment>
+    <Sql><![CDATA[
+SELECT
+  (select coalesce(cast(count(print_history.group_print)+1 as character),'') as printto
+  from print_history
+  where print_history.code_print = gsh.gsp_selling_price_id and print_history.group_print = 'Selling Price Detail'),
+  TO_CHAR(now(),'YYYY / MM / dd') as printed,
+  gsp.material_price AS material_price,
+  gsp.avalan_p AS avalan_p,
+  gsp.avalan_v AS avalan_v,
+  gsp.packing AS packing,
+  gsp.fix_cost_p AS fix_cost_p,
+  gsp.fix_cost_v AS fix_cost_v,
+  gsp.variabel_cost AS variabel_cost,
+  gsp.waste_cost_p AS waste_cost_p,
+  gsp.waste_cost_v AS waste_cost_v,
+  gsp.cof_p AS cof_p,
+  gsp.cof_v AS cof_v,
+  gsp.handling_p AS handling_p,
+  gsp.handling_v AS handling_v,
+  gsp.profit_p AS profit_p,
+  gsp.profit_v AS profit_v,  
+  gsp.net_sales AS net_sales,
+  gsp.freight_p AS freight_p, 
+  gsp.freight_v AS freight_v,
+  gsp.insurance_p AS insurance_p, 
+  gsp.insurance_v AS insurance_v, 
+  gsp.selling_price AS selling_price,
+  gsp.unit_price AS unit_price,
+  gsp.qty,
+  cb.name AS last_rev ,cur.iso_code AS currency, gsh.documentno, mp.name AS product, mb.description AS brand, cu.name AS uom 
+  FROM gsp_sellprice_line gsp
+  LEFT JOIN c_uom cu ON (cu.c_uom_id = gsp.c_uom_id)
+  LEFT JOIN m_brand mb ON (mb.m_brand_id = gsp.m_brand_id)
+  LEFT JOIN  gsp_selling_price gsh ON (gsh.gsp_selling_price_id = gsp.gsp_selling_price_id)
+  LEFT JOIN c_bpartner cb ON (cb.c_bpartner_id = gsh.c_bpartner_id)
+  LEFT JOIN c_currency cur ON (cur.c_currency_id = gsh.c_currency_id)
+  LEFT JOIN m_product mp ON (mp.m_product_id = gsp.m_product_id)
+  WHERE 1=1 AND gsh.GSP_Selling_PRICE_ID IN ('1')
+        
+    ]]></Sql>
+
+    <Parameter name="gspSellingPriceId" type="replace" optional="true" after="AND gsh.GSP_Selling_PRICE_ID IN (" text="'1'"/>
+  </SqlMethod> 
+
+</SqlClass>

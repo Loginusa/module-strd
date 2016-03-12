@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION GSP_GETPRICE_VERSION">
+    <function name="GSP_GETPRICE_VERSION" type="NUMERIC">
+      <parameter name="p_tgl" type="TIMESTAMP" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="p_product" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[/*************************************************************************
+* The contents of this file are subject to the Openbravo  Public  License
+* Version  1.1  (the  "License"),  being   the  Mozilla   Public  License
+* Version 1.1  with a permitted attribution clause; you may not  use this
+* file except in compliance with the License. You may obtain  a copy of
+* the License at http://www.openbravo.com/legal/license.html
+* Software distributed under the License  is  distributed  on  an "AS IS"
+* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+* License for the specific  language  governing  rights  and  limitations
+* under the License.
+* The Original Code is Openbravo ERP.
+* The Initial Developer of the Original Code is Openbravo SLU
+* All portions are Copyright (C) 2012 Openbravo SLU
+* All Rights Reserved.
+* Contributor(s):  ______________________________________.
+************************************************************************/
+
+v_hasil NUMBER:=0;
+BEGIN
+    
+	SELECT mpp.pricestd INTO v_hasil
+		FROM M_ProductPrice mpp,m_pricelist_version mpv,m_pricelist mp
+			WHERE mpp.m_product_id = p_product 
+			AND mpp.m_pricelist_version_id = mpv.m_pricelist_version_id
+			AND mpv.validFrom <= p_tgl
+			AND mp.m_pricelist_id = mpv.m_pricelist_id 
+			AND mpv.validFrom = (SELECT max(mpv.validfrom) 
+		FROM M_ProductPrice mpp,m_pricelist_version  mpv
+		WHERE mpp.m_product_id = p_product 
+		AND mpp.m_pricelist_version_id = mpv.m_pricelist_version_id
+		AND mpv.validFrom <= p_tgl );
+
+
+
+IF (v_hasil is NULL) then
+v_hasil:=0;
+END IF;
+RETURN v_hasil;
+END GSP_GETPRICE_VERSION
+]]></body>
+    </function>
+  </database>

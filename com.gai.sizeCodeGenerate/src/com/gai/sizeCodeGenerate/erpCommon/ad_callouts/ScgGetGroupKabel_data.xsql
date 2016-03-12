@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ *************************************************************************
+GAI - Sodikin
+ ************************************************************************
+-->
+
+<SqlClass name="ScgGetGroupKabelData" package="com.gai.sizeCodeGenerate.erpCommon.ad_callouts">
+   <SqlClassComment></SqlClassComment>
+   <SqlMethod name="select" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+       		select scg_mgroupkabel.name from scg_mgroupkabel left join scg_jenis_produk on scg_mgroupkabel.scg_mgroupkabel_id = scg_jenis_produk.scg_mgroupkabel_id
+          where scg_jenis_produk_id = ?
+      </Sql>
+      <Parameter name="scgJenisProdukId"/>
+   </SqlMethod>
+   
+</SqlClass>

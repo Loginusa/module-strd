@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER SCG_ATTRIBUTE_NAMA_BAHAN_BAKU">
+    <trigger name="SCG_ATTRIBUTE_NAMA_BAHAN_BAKU" table="SCG_NAMA_BAHAN_BAKU" fires="before" insert="true" update="true" delete="false" foreach="row">
+      <body><![CDATA[
+ v_Value VARCHAR(32);
+ 
+ v_message VARCHAR(100);
+ TYPE RECORD IS REF CURSOR;
+  Cur_Value RECORD;
+  
+        
+BEGIN
+    
+    IF AD_isTriggerEnabled()='N' THEN RETURN;
+    END IF;
+ 
+
+IF (INSERTING OR UPDATING) THEN    
+	FOR Cur_Value IN 
+	 SELECT * FROM scg_nama_bahan_baku WHERE scg_nama_bahan_baku_id <> :NEW.scg_nama_bahan_baku_id
+	LOOP 	 
+		IF ( :NEW.scg_group_material_id=Cur_Value.scg_group_material_id AND(:NEW.Value=Cur_Value.value OR :NEW.Name=Cur_Value.Name)) THEN
+		 RAISE_APPLICATION_ERROR(-20000,'@SCG_KodeNamaError@');
+		END IF;
+
+	END LOOP;
+END IF;
+
+
+
+END SCG_ATTRIBUTE_NAMA_BAHAN_BAKU
+]]></body>
+    </trigger>
+  </database>

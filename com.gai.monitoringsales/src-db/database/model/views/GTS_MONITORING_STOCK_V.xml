@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <database name="VIEW GTS_MONITORING_STOCK_V">
+    <view name="GTS_MONITORING_STOCK_V"><![CDATA[SELECT mp.m_product_id AS gts_monitoring_stock_v_id, mp.ad_client_id, mp.ad_org_id, mp.updated, mp.updatedby, mp.isactive, mp.created, mp.createdby, mp.m_product_id, mp.value AS kode_produk, mp.name AS nama_produk, mpc.name AS kategori_produk, sum(msd.qtyonhand) AS qtyonhand FROM m_storage_detail msd LEFT JOIN m_product mp ON mp.m_product_id = msd.m_product_id LEFT JOIN m_product_category mpc ON mpc.m_product_category_id = mp.m_product_category_id GROUP BY mp.m_product_id, mp.ad_client_id, mp.ad_org_id, mp.updated, mp.updatedby, mp.isactive, mp.created, mp.createdby, mp.value, mp.name, mpc.name ORDER BY mp.m_product_id]]></view>
+  </database>

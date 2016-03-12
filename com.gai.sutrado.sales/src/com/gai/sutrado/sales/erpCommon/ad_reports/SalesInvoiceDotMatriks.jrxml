@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="SalesInvoiceDotMatriks" pageWidth="650" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="610" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0000000000000004"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="DOCUMENT_ID" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select ci.dateinvoiced as date , ci.documentno as doc, cb.name as nama, cl.name as alamat, mp.name as barang, cil.qtyinvoiced as qty, cil.priceactual as harga,(case ci.docstatus
+	when 'CO' then 'Completed'
+	when 'VO' then 'Void'
+	when 'DR' then 'Draft'end)as docstat,
+cil.qtyinvoiced * cil.priceactual as subtotal, ci.description as ket, cu.name as uom ,cit.taxamt as totaltax
+
+from c_invoice ci
+left join c_bpartner cb on cb.c_bpartner_id = ci.c_bpartner_id
+left join c_bpartner_location cl on  cb.c_bpartner_id = cl.c_bpartner_id
+left join c_invoiceline cil on cil.c_invoice_id = ci.c_invoice_id
+left join m_product mp on mp.m_product_id = cil.m_product_id
+left join c_uom cu on cu.c_uom_id = cil.c_uom_id
+left join c_invoicetax cit on cit.c_invoice_id = ci.c_invoice_id
+LEFT JOIN AD_USER ON ci.AD_USER_ID = AD_USER.AD_USER_ID
+left join C_POC_DOCTYPE_TEMPLATE ON C_POC_DOCTYPE_TEMPLATE.C_DOCTYPE_ID = ci.C_DOCTYPE_ID
+left join ad_client ON ad_client.ad_client_id = ci.ad_client_id
+
+
+where docstatus !='TEMP' and issotrx='Y' and ci.c_invoice_id=$P{DOCUMENT_ID}]]>
+	</queryString>
+	<field name="date" class="java.sql.Timestamp"/>
+	<field name="doc" class="java.lang.String"/>
+	<field name="nama" class="java.lang.String"/>
+	<field name="alamat" class="java.lang.String"/>
+	<field name="barang" class="java.lang.String"/>
+	<field name="qty" class="java.math.BigDecimal"/>
+	<field name="harga" class="java.math.BigDecimal"/>
+	<field name="docstat" class="java.lang.String"/>
+	<field name="subtotal" class="java.math.BigDecimal"/>
+	<field name="ket" class="java.lang.String"/>
+	<field name="uom" class="java.lang.String"/>
+	<field name="totaltax" class="java.math.BigDecimal"/>
+	<variable name="totalsub" class="java.math.BigDecimal" resetType="Column" incrementType="Column" calculation="Sum">
+		<variableExpression><![CDATA[$F{subtotal}]]></variableExpression>
+	</variable>
+	<variable name="totalppn" class="java.math.BigDecimal" resetType="Column" incrementType="Column" calculation="Sum">
+		<variableExpression><![CDATA[$F{totaltax}]]></variableExpression>
+	</variable>
+	<variable name="variable1" class="java.lang.String">
+		<variableExpression><![CDATA["   -  Status : "+$F{docstat}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<title>
+		<band height="165" splitType="Stretch">
+			<textField>
+				<reportElement x="397" y="8" width="114" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[new SimpleDateFormat("dd MMMMM yyyy",new java.util.Locale("id")).format($F{date})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="373" y="52" width="203" height="56"/>
+				<textElement>
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nama}+"\n"+$F{alamat}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="123" y="130" width="197" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{doc}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="373" y="130" width="48" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Status :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="421" y="130" width="154" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{docstat}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="24" splitType="Stretch">
+			<textField>
+				<reportElement x="8" y="1" width="79" height="19"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{qty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="111" y="1" width="205" height="21"/>
+				<textElement>
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nama}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="338" y="1" width="72" height="21"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{harga}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="434" y="1" width="141" height="22"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{subtotal}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="504" splitType="Stretch">
+			<textField pattern="#,##0.00">
+				<reportElement x="435" y="455" width="143" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{totalsub}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <database name="VIEW GTS_STATUS_PAYMENT_V">
+    <view name="GTS_STATUS_PAYMENT_V"><![CDATA[SELECT ad_ref_list.ad_ref_list_id AS gts_status_payment_v_id, ad_ref_list.ad_client_id, ad_ref_list.ad_org_id, ad_ref_list.updated, ad_ref_list.updatedby, ad_ref_list.isactive, ad_ref_list.created, ad_ref_list.createdby, ad_ref_list.value, ad_ref_list.name FROM ad_reference LEFT JOIN ad_ref_list ON ad_reference.ad_reference_id = ad_ref_list.ad_reference_id WHERE ad_reference.name = 'FIN_Payment status']]></view>
+  </database>

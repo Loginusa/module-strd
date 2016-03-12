@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <database name="MODIFIED TABLE CGSD_DETAIL">
+    <table name="CGSD_DETAIL" primaryKey="CGSD_DETAIL_KEY">
+      <column name="EM_CGID_DETAIL_ID" primaryKey="false" required="false" type="VARCHAR" size="32" autoIncrement="false">
+        <default/>
+        <onCreateDefault/>
+      </column>
+      <foreign-key foreignTable="CGID_DETAIL" name="EM_CGID_DETAIL_DETAIL">
+        <reference local="EM_CGID_DETAIL_ID" foreign="CGID_DETAIL_ID"/>
+      </foreign-key>
+    </table>
+  </database>

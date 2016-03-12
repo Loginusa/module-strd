@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+
+<SqlClass name="GsqGetTaxData" package="com.gai.sutrado.sellingprice.quotation.erpCommon.ad_callouts">
+   <SqlClassComment></SqlClassComment>
+   <SqlMethod name="select" type="preparedStatement" return="multiple">
+      <SqlMethodComment></SqlMethodComment>
+      <Sql>
+        select sum((co.priceactual*(co.discount/100))) as discount , sum(cot.taxamt) as ppn 
+        from c_orderline co
+        left join c_orderlinetax cot on co.c_order_id = cot.c_order_id
+        where co.c_order_id = ?
+      </Sql>
+      <Parameter name="mProductId"/>
+   </SqlMethod>
+</SqlClass>

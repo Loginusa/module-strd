@@ -1,0 +1,201 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION GSP_ORDER_FROM_NETPRICE">
+    <function name="GSP_ORDER_FROM_NETPRICE" type="NULL">
+      <parameter name="pinstance_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[-- Logistice
+  v_ResultStr VARCHAR2(2000):='';
+  v_Message VARCHAR2(2000):='';
+  v_Record_ID VARCHAR2(32);
+  -- Parameter
+  TYPE RECORD IS REF CURSOR;
+    Cur_Parameter RECORD;
+    Cur_OrderLine RECORD;
+
+    v_LineNo NUMBER:=0;
+    v_OtherCost NUMBER;
+    v_HasilOtherCost NUMBER;
+    v_DeliveryCost NUMBER;
+    v_AD_User_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_Netprice VARCHAR(32);--OBTG:VARCHAR2--
+    v_OrderLine_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_Client_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_Org_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_Partner_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_PartnerLocation_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_Currency_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_WareHouse_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_Order_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_DateOrdered DATE;
+    v_TaxCategory_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_Tax_ID VARCHAR(32);--OBTG:VARCHAR2--
+    v_HandlingAmountLine NUMBER;
+    v_QtyOrdered NUMBER;
+
+/* Author by : Tias ade Putra (085284734634) */
+
+    END_PROCESS BOOLEAN:=false;
+  BEGIN
+    --  Update AD_PInstance
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Processing ' || PInstance_ID) ;
+    v_ResultStr:='PInstanceNotFound';
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'Y', NULL, NULL) ;
+  BEGIN --BODY
+    -- Get Parameters
+    v_ResultStr:='ReadingParameters';
+    FOR Cur_Parameter IN
+      (SELECT i.Record_ID,
+        p.ParameterName,
+        p.P_String,
+        p.P_Number,
+        p.P_Date,
+        i.CreatedBy AS AD_User_ID
+      FROM AD_PInstance i
+      LEFT JOIN AD_PInstance_Para p
+        ON i.AD_PInstance_ID=p.AD_PInstance_ID
+      WHERE i.AD_PInstance_ID=PInstance_ID
+      ORDER BY p.SeqNo
+      )
+    LOOP
+      v_Record_ID:=Cur_Parameter.Record_ID;
+      v_AD_User_ID:=Cur_Parameter.AD_User_ID;
+    
+  IF(Cur_Parameter.ParameterName='GSP_Selling_Price_ID') THEN
+        v_Netprice:=Cur_Parameter.P_String;
+        DBMS_OUTPUT.PUT_LINE('GSP_Selling_Price_ID=' || v_Netprice);
+  ELSEIF(Cur_Parameter.ParameterName='QtyOrdered') THEN
+        v_QtyOrdered:=Cur_Parameter.P_Number;
+        DBMS_OUTPUT.PUT_LINE('QtyOrdered=' || v_QtyOrdered);
+  ELSEIF(Cur_Parameter.ParameterName='EM_Gsq_OtherCost') THEN
+        v_OtherCost:=Cur_Parameter.P_Number;
+        DBMS_OUTPUT.PUT_LINE('EM_Gsq_OtherCost=' || v_OtherCost);
+  ELSEIF(Cur_Parameter.ParameterName='EM_Gsq_Handlingamount') THEN
+        v_HandlingAmountLine:=Cur_Parameter.P_Number;
+        DBMS_OUTPUT.PUT_LINE('EM_Gsq_Handlingamount=' || v_HandlingAmountLine);
+      ELSE
+        DBMS_OUTPUT.PUT_LINE('*** Unknown Parameter=' || Cur_Parameter.ParameterName) ;
+      END IF;
+      
+    END LOOP; -- Get Parameter
+    DBMS_OUTPUT.PUT_LINE('  Record_ID=' || v_Record_ID);
+
+
+
+    SELECT c_order_id,ad_client_id,ad_org_id,c_bpartner_id,c_bpartner_location_id,c_currency_id,m_warehouse_id,dateordered INTO
+    v_Order_ID,v_Client_ID,v_Org_ID,v_Partner_ID,v_PartnerLocation_ID,v_Currency_ID,v_WareHouse_ID,v_DateOrdered
+    FROM c_order 
+    WHERE c_order_id = v_Record_ID;
+
+
+    FOR Cur_OrderLine IN
+      (SELECT gspl.m_product_id,gsp.tanggal,gsp.c_currency_id,
+             gsp.ad_client_id,gsp.ad_org_id,gspl.qty,gspl.c_uom_id,
+             gspl.unit_price
+            FROM gsp_sellprice_line gspl,gsp_selling_price gsp
+            WHERE gsp.gsp_selling_price_id = gspl.gsp_selling_price_id
+            AND gsp.gsp_selling_price_id = v_Netprice
+      )
+    LOOP
+
+       v_LineNo := v_LineNo +10;
+
+        Ad_Sequence_Next('C_OrderLine', Cur_OrderLine.AD_Client_ID, v_OrderLine_ID);
+
+        SELECT c_taxcategory_id INTO v_TaxCategory_ID 
+		FROM m_product 
+		WHERE m_product_id = Cur_OrderLine.m_product_id;
+
+        SELECT c_tax_id INTO v_Tax_ID 
+		FROM c_tax 
+		WHERE c_taxcategory_id = v_TaxCategory_ID;
+
+      v_HasilOtherCost := ((v_QtyOrdered * C_CURRENCY_CONVERT(ROUND(Cur_OrderLine.unit_price,2),
+                          Cur_OrderLine.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_OrderLine.c_currency_id)),
+                          TO_DATE(Cur_OrderLine.tanggal), NULL,v_Client_ID,v_Org_ID)) * v_OtherCost) /100;
+
+      v_DeliveryCost   := C_CURRENCY_CONVERT(ROUND(v_HandlingAmountLine,2),
+                          Cur_OrderLine.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_OrderLine.c_currency_id)),
+                          TO_DATE(Cur_OrderLine.tanggal), NULL,v_Client_ID,v_Org_ID);             
+
+        INSERT
+        INTO c_orderline
+          (c_orderline_id,
+           ad_client_id,
+           ad_org_id,
+           isactive,
+           created,
+           createdby,
+           updated,
+           updatedby,
+           c_order_id,
+           line,
+           c_bpartner_id,
+           c_bpartner_location_id,
+           dateordered,
+           datepromised,
+           m_product_id,
+           m_warehouse_id,
+           c_uom_id,
+           qtyordered,
+           c_currency_id,
+           c_tax_id,
+           pricelist,
+           priceactual,
+           pricelimit,
+           pricestd,
+           em_gsq_othercost,
+           em_gsq_hasilothercost,
+           em_gsq_handlingamount,
+           em_gsp_selling_price_id
+            )
+         VALUES(v_OrderLine_ID,
+         v_Client_ID,
+         v_Org_ID,
+         'Y',
+         now(),
+         v_AD_User_ID,
+         now(),
+         v_AD_User_ID,
+         v_Order_ID,
+         v_LineNo,
+         v_Partner_ID,
+         v_PartnerLocation_ID,
+         v_DateOrdered,
+         v_DateOrdered,
+         Cur_OrderLine.m_product_id,
+         v_WareHouse_ID,
+         Cur_OrderLine.c_uom_id,
+         v_QtyOrdered,
+         v_Currency_ID,
+         v_Tax_ID,
+         C_CURRENCY_CONVERT(ROUND(Cur_OrderLine.unit_price,2),Cur_OrderLine.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_OrderLine.c_currency_id)),TO_DATE(Cur_OrderLine.tanggal), NULL,v_Client_ID,v_Org_ID),
+         C_CURRENCY_CONVERT(ROUND(Cur_OrderLine.unit_price,2),Cur_OrderLine.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_OrderLine.c_currency_id)),TO_DATE(Cur_OrderLine.tanggal), NULL,v_Client_ID,v_Org_ID),
+         C_CURRENCY_CONVERT(ROUND(Cur_OrderLine.unit_price,2),Cur_OrderLine.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_OrderLine.c_currency_id)),TO_DATE(Cur_OrderLine.tanggal), NULL,v_Client_ID,v_Org_ID),
+         C_CURRENCY_CONVERT(ROUND(Cur_OrderLine.unit_price,2),Cur_OrderLine.c_currency_id,COALESCE(v_Currency_ID,TO_CHAR(Cur_OrderLine.c_currency_id)),TO_DATE(Cur_OrderLine.tanggal), NULL,v_Client_ID,v_Org_ID),
+         v_OtherCost,
+         v_HasilOtherCost,
+         v_DeliveryCost,
+         v_Netprice
+         );   
+
+
+    END LOOP;
+   
+    --<<END_PROCESS>>
+    --  Update AD_PInstance
+    DBMS_OUTPUT.PUT_LINE('Updating PInstance - Finished ' || v_Message) ;
+    AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 1, v_Message) ;
+    RETURN;
+  END; --BODY
+EXCEPTION
+WHEN OTHERS THEN
+
+  v_ResultStr:= '@ERROR=' || SQLERRM;
+  DBMS_OUTPUT.PUT_LINE(v_ResultStr) ;
+  AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 0, v_ResultStr) ;
+  RETURN;
+END GSP_ORDER_FROM_NETPRICE
+]]></body>
+    </function>
+  </database>

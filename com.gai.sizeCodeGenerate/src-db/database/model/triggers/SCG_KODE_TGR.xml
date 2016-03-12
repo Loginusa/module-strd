@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER SCG_KODE_TGR">
+    <trigger name="SCG_KODE_TGR" table="SCG_SIZE" fires="after" insert="true" update="false" delete="false" foreach="row">
+      <body><![CDATA[
+v_phasa NUMBER;
+v_netral NUMBER;
+v_kodeS NUMBER;
+v_phasaamts NUMBER;
+v_netralamts NUMBER;
+
+v_minimumSize NUMBER ;
+v_colour character varying(32):=null;
+v_uom character varying(32):=null;
+v_conductor character varying(32):=null;
+v_colours character varying(32):=null;
+v_uoms character varying(32):=null;
+v_conductors character varying(32):=null;
+v_code_products character varying(32):=null;
+
+v_lighting NUMBER;
+v_sizephasa NUMBER;
+v_sizenetral NUMBER;
+v_sizelighting NUMBER;
+
+v_lightingamts NUMBER;
+v_sizephasas NUMBER;
+v_sizenetrals NUMBER;
+v_sizelightings NUMBER;
+
+v_diameter character varying(32):=null;
+v_tebal NUMBER ;
+v_lebar NUMBER;
+
+
+v_diameters character varying(32):=null;
+v_tebals NUMBER ;
+v_lebars NUMBER;
+v_kode character varying(32):=null;
+
+i record;
+
+BEGIN
+    
+    IF AD_isTriggerEnabled()='N' THEN RETURN;
+    END IF;
+
+    
+
+		select scg_random_string(3) into v_kode;
+	  	UPDATE scg_size SET code_product = v_kode WHERE scg_size_ID = :NEW.scg_size_ID;
+
+	
+
+
+EXCEPTION
+WHEN NO_DATA_FOUND THEN
+  RAISE_APPLICATION_ERROR(-20000, '@20014@') ;
+END SCG_KODE_TGR
+]]></body>
+    </trigger>
+  </database>

@@ -1,0 +1,243 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION GPC_TERBILANG">
+    <function name="GPC_TERBILANG" type="VARCHAR">
+      <parameter name="nilai" type="NUMERIC" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[pembagi    bigint ;
+    nilai_besar   double precision;
+    nilai_kecil    double precision;
+    kata    varchar(250);
+    hasil_bagi    NUMBER;
+    dummy        double precision;
+    awalan_kata    varchar(100);
+    unit        varchar(30);
+    cek_koma    varchar(50);
+    awalan    varchar(10);
+    akhiran        varchar(10);
+begin
+ kata = '';
+ nilai_besar = FLOOR(ABS(nilai) );
+ nilai_kecil = ROUND((cast(ABS(nilai) as NUMBER) - cast(nilai_besar as NUMBER)) * 100,0);
+ pembagi = 1000000000000;
+if nilai_besar > pembagi * 1000.00 then kata = 'OUT OF RANGE'; end if;
+
+
+WHILE pembagi >= 1
+loop
+  hasil_bagi = FLOOR(nilai_besar / pembagi);
+  nilai_besar = cast(nilai_besar as bigint) % pembagi;
+  unit = '';
+  unit = (case when 
+        hasil_bagi >0.00
+     then
+         (case when pembagi = 1000000000000 THEN 'TRILYUN ' else
+         (case WHEN pembagi=1000000000 THEN 'MILYAR ' else
+         (case WHEN pembagi=1000000 THEN 'JUTA ' else
+         (case WHEN pembagi=1000 THEN 'RIBU '
+     
+       else
+       unit
+       
+             end)
+         end)
+         END)
+         END)
+     else
+        unit
+     end)  ;
+
+     awalan_kata = '';
+     dummy = hasil_bagi;
+     if dummy>=100.00 then
+       awalan_kata = (case when floor(dummy/100.00) = 1 then 'SE' else
+        (case when floor(dummy/100.00) = 2 then 'DUA ' else
+        (case when floor(dummy/100.00) = 3 then 'TIGA ' else
+        (case when floor(dummy/100.00) = 4 then 'EMPAT ' else
+        (case when floor(dummy/100.00) = 5 then 'LIMA ' else
+        (case when floor(dummy/100.00) = 6 then 'ENAM ' else
+        (case when floor(dummy/100.00) = 7 then 'TUJUH ' else
+        (case when floor(dummy/100.00) = 8 then 'DELAPAN ' else
+        'SEMBILAN '
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)
+        END) || 'RATUS ';
+     end if;
+     dummy = cast(hasil_bagi as bigint) % 100;
+
+     if (dummy<10) then       
+	if dummy=1.00 and unit = 'RIBU ' then
+         if  hasil_bagi=dummy then awalan_kata = awalan_kata || 'SE';
+         else
+         awalan_kata = awalan_kata ||'SATU ';
+         end if;
+       else
+         if dummy >0.00 then
+            awalan_kata =awalan_kata ||
+            (case when dummy = 1 then 'SATU ' else
+        (case when dummy = 2 then 'DUA ' else
+        (case when dummy = 3 then 'TIGA ' else
+        (case when dummy = 4 then 'EMPAT ' else
+        (case when dummy = 5 then 'LIMA ' else
+        (case when dummy = 6 then 'ENAM ' else
+        (case when dummy = 7 then 'TUJUH ' else
+        (case when dummy = 8 then 'DELAPAN ' else
+        'SEMBILAN '
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)
+        END);
+        end if;
+       end if;
+      else
+   
+    if dummy >10 AND dummy <=20 then
+         awalan_kata = awalan_kata ||
+         (case when cast(dummy as bigint)%10 = 1 then 'SE' else
+        (case when cast(dummy as bigint)%10 = 2 then 'DUA ' else
+        (case when cast(dummy as bigint)%10 = 3 then 'TIGA ' else
+        (case when cast(dummy as bigint)%10 = 4 then 'EMPAT ' else
+        (case when cast(dummy as bigint)%10 = 5 then 'LIMA ' else
+        (case when cast(dummy as bigint)%10 = 6 then 'ENAM ' else
+        (case when cast(dummy as bigint)%10 = 7 then 'TUJUH ' else
+        (case when cast(dummy as bigint)%10 = 8 then 'DELAPAN ' else
+        'SEMBILAN '
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)||'BELAS ';
+    else
+        awalan_kata = awalan_kata ||
+         (case when floor(dummy/10) = 1 then 'SE' else
+        (case when floor(dummy/10) = 2 then 'DUA ' else
+        (case when floor(dummy/10) = 3 then 'TIGA ' else
+        (case when floor(dummy/10) = 4 then 'EMPAT ' else
+        (case when floor(dummy/10) = 5 then 'LIMA ' else
+        (case when floor(dummy/10)= 6 then 'ENAM ' else
+        (case when floor(dummy/10) = 7 then 'TUJUH ' else
+        (case when floor(dummy/10) = 8 then 'DELAPAN ' else
+        'SEMBILAN '
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)||'PULUH ';
+   IF cast(dummy as bigint)% 10 > 0 then
+             awalan_kata = awalan_kata ||
+ (case when cast(dummy as bigint)%10  = 1 then 'SE' else
+        (case when cast(dummy as bigint)%10 = 2 then 'DUA ' else
+        (case when cast(dummy as bigint)%10 = 3 then 'TIGA ' else
+        (case when cast(dummy as bigint)%10 = 4 then 'EMPAT ' else
+        (case when cast(dummy as bigint)%10 = 5 then 'LIMA ' else
+        (case when cast(dummy as bigint)%10 = 6 then 'ENAM ' else
+        (case when cast(dummy as bigint)%10 = 7 then 'TUJUH ' else
+        (case when cast(dummy as bigint)%10 = 8 then 'DELAPAN ' else
+        'SEMBILAN '
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)
+        END)
+        END);
+
+         end if;  
+         end if;      
+     end if;
+     kata = kata || awalan_kata || unit;
+     pembagi = pembagi / 1000;
+end loop;
+
+if FLOOR(nilai) = 0.00 then kata = 'NOL '; end if;
+cek_koma = '';
+  
+if (nilai_kecil <10) then  if nilai_kecil > 0.00 then
+     cek_koma = 'KOMA NOL '||
+               (case when nilai_kecil = 1 then 'SATU ' else
+        (case when nilai_kecil = 2 then 'DUA ' else
+        (case when nilai_kecil = 3 then 'TIGA ' else
+        (case when nilai_kecil = 4 then 'EMPAT ' else
+        (case when nilai_kecil = 5 then 'LIMA ' else
+        (case when nilai_kecil = 6 then 'ENAM ' else
+        (case when nilai_kecil = 7 then 'TUJUH ' else
+        (case when nilai_kecil = 8 then 'DELAPAN ' else
+                'SEMBILAN '
+            ENd)
+         end)
+         end)
+         end)
+         end)
+         end)
+         end)
+         end);
+       
+  end if ;
+ else
+
+ cek_koma = 'KOMA '||
+               (case when floor(nilai_kecil/10.00) = 1 then 'SATU ' else
+        (case when floor(nilai_kecil/10.00) = 2 then 'DUA ' else
+        (case when floor(nilai_kecil/10.00) = 3 then 'TIGA ' else
+        (case when floor(nilai_kecil/10.00) = 4 then 'EMPAT ' else
+        (case when floor(nilai_kecil/10.00) = 5 then 'LIMA ' else
+        (case when floor(nilai_kecil/10.00) = 6 then 'ENAM ' else
+        (case when floor(nilai_kecil/10.00) = 7 then 'TUJUH ' else
+        (case when floor(nilai_kecil/10.00) = 8 then 'DELAPAN ' else
+                'SEMBILAN '
+            ENd)
+         end)
+         end)
+         end)
+         end)
+         end)
+         end)
+         end);
+       
+    if (Cast(nilai_kecil as bigint)%10>0) then
+ 
+         cek_koma = cek_koma ||
+         (case when cast(nilai_kecil as bigint)%10 = 1 then 'SATU ' else
+        (case when  cast(nilai_kecil as bigint)%10  = 2 then 'DUA ' else
+        (case when  cast(nilai_kecil as bigint)%10  = 3 then 'TIGA ' else
+        (case when  cast(nilai_kecil as bigint)%10  = 4 then 'EMPAT ' else
+        (case when  cast(nilai_kecil as bigint)%10  = 5 then 'LIMA ' else
+        (case when  cast(nilai_kecil as bigint)%10  = 6 then 'ENAM ' else
+        (case when  cast(nilai_kecil as bigint)%10  = 7 then 'TUJUH ' else
+        (case when  cast(nilai_kecil as bigint)%10  = 8 then 'DELAPAN ' else
+                'SEMBILAN '
+            ENd)
+         end)
+         end)
+         end)
+         end)
+         end)
+         end)
+         end);
+     end if;
+      
+ end if ;
+
+kata = initcap(kata) || initcap(cek_koma);
+
+RETURN kata; 
+end
+]]></body>
+    </function>
+  </database>

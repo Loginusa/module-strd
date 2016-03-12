@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+  <database name="MODIFIED TABLE M_PRODUCTPRICE">
+    <table name="M_PRODUCTPRICE" primaryKey="M_PRODUCTPRICE_KEY">
+      <column name="EM_GSP_MASTER_PRICE_ID" primaryKey="false" required="false" type="VARCHAR" size="32" autoIncrement="false">
+        <default/>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_GSP_PRICE_PRODUCT_ID" primaryKey="false" required="false" type="VARCHAR" size="32" autoIncrement="false">
+        <default/>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_GSP_SELLING_PRICE_ID" primaryKey="false" required="false" type="VARCHAR" size="32" autoIncrement="false">
+        <default/>
+        <onCreateDefault/>
+      </column>
+      <foreign-key foreignTable="GSP_MASTER_PRICE" name="EM_GSP_MASTER_PRICE_REFERENCE">
+        <reference local="EM_GSP_MASTER_PRICE_ID" foreign="GSP_MASTER_PRICE_ID"/>
+      </foreign-key>
+      <foreign-key foreignTable="GSP_PRICE_PRODUCT" name="EM_GSP_PRC_PRODUCT_REFERENCE">
+        <reference local="EM_GSP_PRICE_PRODUCT_ID" foreign="GSP_PRICE_PRODUCT_ID"/>
+      </foreign-key>
+      <foreign-key foreignTable="GSP_SELLING_PRICE" name="EM_GSP_SELLING_PRICE_REFERENCE">
+        <reference local="EM_GSP_SELLING_PRICE_ID" foreign="GSP_SELLING_PRICE_ID"/>
+      </foreign-key>
+    </table>
+  </database>

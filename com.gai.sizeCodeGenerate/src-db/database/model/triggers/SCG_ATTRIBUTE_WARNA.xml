@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER SCG_ATTRIBUTE_WARNA">
+    <trigger name="SCG_ATTRIBUTE_WARNA" table="SCG_WARNA" fires="before" insert="true" update="true" delete="false" foreach="row">
+      <body><![CDATA[
+ v_Value VARCHAR(32);
+ 
+ v_message VARCHAR(100);
+ TYPE RECORD IS REF CURSOR;
+  Cur_Value RECORD;
+  
+        
+BEGIN
+    
+    IF AD_isTriggerEnabled()='N' THEN RETURN;
+    END IF;
+ 
+
+IF (INSERTING OR UPDATING) THEN    
+	FOR Cur_Value IN 
+	 SELECT kode,nama FROM scg_warna WHERE scg_warna_id <> :NEW.scg_warna_id
+	LOOP 	 
+		IF (:NEW.kode=Cur_Value.kode OR :NEW.nama=Cur_Value.nama) THEN
+		 RAISE_APPLICATION_ERROR(-20000,'@SCG_KodeNamaError@');
+		END IF;
+
+	END LOOP;
+END IF;
+
+/* IF (UPDATING) THEN
+	IF (:NEW.Value=:OLD.Value) THEN
+		RAISE EXCEPTION '%', 'Kode Attribute sudah ada'
+	END IF;
+ END IF;*/
+  
+
+
+END SCG_ATTRIBUTE_WARNA
+]]></body>
+    </trigger>
+  </database>

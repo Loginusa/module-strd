@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION SCG_GENERATEMATRIAL_JAVA">
+    <function name="SCG_GENERATEMATRIAL_JAVA" type="NULL">
+      <parameter name="v_group_material" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="v_nama_bahan_baku" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="v_jenis_bahan_baku" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="v_ukuran_produk" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="v_type_material" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="v_resultstr" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="v_record_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[/*************************************************************************
+* Tias ade putra - PT.Global Anugerah Indonesia
+************************************************************************/
+  -- Logistice
+  v_ResultStr VARCHAR2(2000):='';
+  v_Message VARCHAR2(2000):='';
+  -- Parameter
+  TYPE RECORD IS REF CURSOR;
+
+
+    v_grup VARCHAR(1000);  
+    v_grup_n VARCHAR(1000);  
+    v_jenis_n VARCHAR(1000);
+    v_nama_n VARCHAR(1000); -- Nama Bahan Baku
+    v_nama_v VARCHAR(1000); --Kode Bahan Baku
+    v_ukuran_produk_n VARCHAR(1000);
+    v_jenis_v VARCHAR(1000);
+    v_kategori_id VARCHAR(1000);
+    v_prefik_pkategori VARCHAR(1000);
+--    v_LineNo NUMERIC(10) ;
+    END_PROCESS BOOLEAN:=false;
+  BEGIN
+    --  Update AD_PInstance
+--    RAISE NOTICE '%','Updating PInstance - Processing ' || PInstance_ID ;
+    v_ResultStr:='PInstanceNotFound';
+    --PERFORM AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'Y', NULL, NULL) ;
+  BEGIN --BODY
+    -- Get Parameters
+    v_ResultStr:='ReadingParameters';
+    
+    DBMS_OUTPUT.PUT_LINE('  Record_ID=' || v_Record_ID) ;
+    
+	select value into v_grup from scg_group_material where scg_group_material_id = v_group_material ;
+
+	select name into v_grup_n from scg_group_material where scg_group_material_id =v_group_material ;
+	select name into v_jenis_n from scg_jenis_bahan_baku where scg_jenis_bahan_baku_id = v_jenis_bahan_baku;
+        select value into v_jenis_v from scg_jenis_bahan_baku where scg_jenis_bahan_baku_id = v_jenis_bahan_baku;
+	
+	select name into v_nama_n from scg_nama_bahan_baku where scg_nama_bahan_baku_id = v_nama_bahan_baku ;
+	select value into v_nama_v from scg_nama_bahan_baku where scg_nama_bahan_baku_id = v_nama_bahan_baku ;
+	select name into v_ukuran_produk_n from scg_ukuranmaterial where value = v_ukuran_produk;
+
+
+      SELECT M_PRODUCT_CATEGORY_ID INTO v_kategori_id FROM M_PRODUCT WHERE M_PRODUCT_ID = v_Record_ID;
+      SELECT VALUE INTO v_prefik_pkategori FROM M_PRODUCT_CATEGORY WHERE M_PRODUCT_CATEGORY_ID = v_kategori_id;
+      
+      UPDATE m_product SET em_gsp_materialtype=v_type_material, value = coalesce(v_prefik_pkategori,'')|| '-' || coalesce(v_grup,'') || coalesce(v_nama_v,'') 
+	||coalesce(v_jenis_v,'') 
+	|| coalesce(v_ukuran_produk,''),Description=coalesce(v_grup_n,'') ,name = coalesce(v_nama_n,'')  ||' ' ||coalesce( v_jenis_n ,'') ||' ' ||coalesce(v_ukuran_produk_n,'') 
+      WHERE m_product_id=v_Record_ID;
+
+   
+    --<<END_PROCESS>>
+    --  Update AD_PInstance
+    --RAISE NOTICE '%','Updating PInstance - Finished ' || v_Message ;
+    --PERFORM AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 1, v_Message) ;
+    RETURN;
+  END; --BODY
+EXCEPTION
+WHEN OTHERS THEN
+
+  v_ResultStr:= '@ERROR=' || SQLERRM;
+  DBMS_OUTPUT.PUT_LINE(v_ResultStr) ;
+  --PERFORM AD_UPDATE_PINSTANCE(PInstance_ID, NULL, 'N', 0, v_ResultStr) ;
+  RETURN;
+END SCG_GENERATEMATRIAL_JAVA
+]]></body>
+    </function>
+  </database>
