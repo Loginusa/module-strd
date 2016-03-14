@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+  <database name="FUNCTION GSP_GETLMEPREMIUM">
+    <function name="GSP_GETLMEPREMIUM" type="VARCHAR">
+      <parameter name="p_field_id" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="gsp_header" type="VARCHAR" mode="in">
+        <default/>
+      </parameter>
+      <parameter name="pil" type="NUMERIC" mode="in">
+        <default/>
+      </parameter>
+      <body><![CDATA[/*************************************************************************
+Pemanggilan (SELECT gsp_getlmepremium(m_product_bom,pilihan) FROM DUAL)
+************************************************************************/
+v_hasil VARCHAR(500);
+v_count NUMBER(10,0);
+BEGIN
+	
+ --SELECT name INTO v_hasil FROM STR_DIVRE where STR_DIVRE_ID = (select em_str_divre_id FROM shr_employee se where se.shr_employee_id=p_field_id);
+ --a.lme_a2c,a.premium_a2c,a.lme_a3c,a.premium_a3c,a.lme_copper,a.premium_copper,a.kurs
+ IF pil = 1 THEN 
+	SELECT a.lme_a2c INTO v_hasil FROM gsp_selling_price a,gsp_sellprice_line b,M_PRODUCT_BOM c where a.gsp_selling_price_id=b.gsp_selling_price_id
+	AND b.M_PRODUCT_ID=c.M_PRODUCT_ID AND c.M_PRODUCT_BOM_ID=p_field_id AND a.GSP_Selling_Price_ID=gsp_header;
+	--'B980B3C0208744F3B6FBF951F9A0E183'
+ END IF;
+
+ 
+
+If (v_hasil is NULL) then
+v_hasil:='';
+END IF;
+RETURN v_hasil;
+END GSP_GETLMEPREMIUM
+]]></body>
+    </function>
+  </database>

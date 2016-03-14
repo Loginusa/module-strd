@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <database name="VIEW GSP_BOMWITHLMEPREMIUM_V">
+    <view name="GSP_BOMWITHLMEPREMIUM_V"><![CDATA[SELECT c.m_product_bom_id AS gsp_bomwithlmepremium_v_id, c.m_product_bom_id, c.ad_client_id, c.ad_org_id, c.isactive, c.created, c.createdby, c.updated, c.updatedby, c.line, c.m_product_id, d.value AS searchkey, e.name AS grup, c.bomqty, c.em_scg_uom, c.em_gsp_isrm, a.lme_a2c, a.premium_a2c, a.lme_a3c, a.premium_a3c, a.lme_copper, a.premium_copper, a.kurs, a.gsp_selling_price_id FROM gsp_selling_price a, gsp_sellprice_line b, m_product_bom c, m_product d, m_product_category e WHERE a.gsp_selling_price_id = b.gsp_selling_price_id AND e.m_product_category_id = d.m_product_category_id AND d.m_product_id = c.m_product_id AND b.m_product_id = c.m_product_id]]></view>
+  </database>
